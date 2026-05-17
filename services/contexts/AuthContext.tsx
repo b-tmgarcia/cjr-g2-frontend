@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation';
 import { login as loginService, logout as logoutService, isAuthenticated, getToken } from '@/services/auth';
 import { User, AuthContextType, LoginCredentials, RegisterCredentials } from '@/types/auth';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

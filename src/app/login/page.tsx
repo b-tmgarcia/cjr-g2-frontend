@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Toaster, toast } from 'react-hot-toast';   //avisos de erro
+import { toast } from 'react-toastify';
 import { login, forgotPassword } from '@/services/auth';
 
 export default function LoginPage() {
@@ -56,9 +56,8 @@ export default function LoginPage() {
   const [passwordIsVisible, setPasswordIsVisible] = useState(false);
 
   return (
-    <>
-      <Toaster position="top-right" />
-      <style jsx>{`
+
+    <>      <style jsx>{`
         .page-wrapper {
           min-height: 100vh;
           padding: 24px;
@@ -272,12 +271,12 @@ export default function LoginPage() {
         <div className="login-card">
           <div className="hero-panel">
             <img
-              src="/images/LOGO%20Stock.io%20(1).png"
+              src="/images/logo_stock.png"
               alt="Stock.io logo background"
               className="hero-logo-bg"
             />
             <img
-              src="/images/StockLee%20-%20Mascote%20da%20Stock.io.png"
+              src="images/Mascote_menina.png"
               alt="Mascote Stock.io"
               className="hero-image"
             />
@@ -332,10 +331,6 @@ export default function LoginPage() {
                 {loading ? "Entrando..." : "ENTRAR"}
               </button>
             </form>
-
-
-
-
 
             <p className="register-line">
               Não possui uma conta? <a href="/register">Cadastre-se</a>
