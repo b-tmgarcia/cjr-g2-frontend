@@ -31,3 +31,8 @@ export default function RootLayout({
     </html>
   );
 }
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
