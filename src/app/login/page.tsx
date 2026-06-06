@@ -1,34 +1,47 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import Image from 'next/image';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { login, forgotPassword } from '@/services/auth';
+
+const loginSchema = z.object({
+  email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
 
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast.error("Por favor preencha todos os campos");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (values: LoginFormValues) => {
     try {
       setLoading(true);
-      const data = await login(email, password);
+      const data = await login(values.email, values.password);
       localStorage.setItem('token', data.token);
       toast.success("Login bem-sucedido! Redirecionando...");
       setTimeout(() => {
         router.push('/');
       }, 2500);
-    } catch (error: any) {
-      const message = error?.response?.data?.message;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string | string[] } } };
+      const message = axiosError.response?.data?.message;
       toast.error(
         Array.isArray(message) ? message.join(", ") : message || "Erro ao fazer login"
       );
@@ -37,7 +50,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgot = async (e: FormEvent) => {
+  const handleForgot = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!resetEmail) {
       toast.error("Por favor insira seu email para redefinir a senha.");
@@ -48,296 +61,136 @@ export default function LoginPage() {
       toast.success(data.message || "Email de recuperação enviado!");
       setShowResetModal(false);
       setResetEmail('');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao enviar email de recuperação");
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || "Erro ao enviar email de recuperação");
     }
   };
 
-  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
-
   return (
-
-    <>      <style jsx>{`
-        .page-wrapper {
-          min-height: 100vh;
-          padding: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f4efde;
-        }
-
-        .login-card {
-          display: grid;
-          grid-template-columns: minmax(320px, 460px) minmax(340px, 520px);
-          width: min(980px, 100%);
-          min-height: calc(100vh - 48px);
-          overflow: visible;
-          background: transparent;
-        }
-
-        .hero-panel {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f4efde;
-          padding: 36px 28px;
-          border-radius: 56px 0 0 56px;
-          overflow: hidden;
-        }
-
-        .hero-logo-bg {
-          position: absolute;
-          top: -24px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 421px;
-          height: 267px;
-          opacity: 0.22;
-          filter: brightness(0.18) saturate(0.8);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .hero-image {
-          position: relative;
-          width: 100%;
-          max-width: 450px;
-          height: auto;
-          z-index: 1;
-          object-fit: contain;
-        }
-
-        .form-panel {
-          width: 100%;
-          margin: 0;
-          min-height: 100%;
-          padding: 76px 40px 40px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          background: #141414;
-          color: #f4f4f4;
-          border-radius: 56px 56px 0 0;
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-        }
-
-        .form-header h1 {
-          margin: 0;
-          font-size: 2.6rem;
-          letter-spacing: 0.15em;
-          color: #f4f4f4;
-          text-transform: uppercase;
-        }
-
-        .form-header p {
-          margin: 16px 0 36px;
-          color: #bdbdbd;
-          font-size: 0.98rem;
-        }
-
-        .form-content {
-          display: grid;
-          gap: 18px;
-        }
-
-        .field-group {
-          display: grid;
-          gap: 8px;
-        }
-
-        .text-input {
-          width: 100%;
-          padding: 18px 22px;
-          border-radius: 999px;
-          border: none;
-          background: #f4f4e8;
-          color: #232323;
-          font-size: 1rem;
-          outline: none;
-          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-        }
-
-        .text-input::placeholder {
-          color: #9d9d9d;
-        }
-
-        .password-row {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-
-        .password-row .text-input {
-          padding-right: 58px;
-        }
-
-        .eye-button {
-          position: absolute;
-          right: 18px;
-          background: none;
-          border: none;
-          color: #777;
-          font-size: 1.15rem;
-          cursor: pointer;
-        }
-
-        .forgot-link {
-          align-self: flex-start;
-          background: none;
-          border: none;
-          color: #e3e3e3;
-          font-size: 0.92rem;
-          text-decoration: underline;
-          cursor: pointer;
-          padding: 0;
-          margin: 4px 0 16px;
-        }
-
-        .submit-button {
-          width: 100%;
-          padding: 18px 20px;
-          border-radius: 999px;
-          border: none;
-          background: #6f4dff;
-          color: white;
-          font-size: 1rem;
-          font-weight: 800;
-          cursor: pointer;
-          transition: transform 0.18s ease, background 0.18s ease;
-          box-shadow: 0 18px 30px rgba(111, 77, 255, 0.18);
-        }
-
-        .submit-button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          background: #5b3cff;
-        }
-
-        .submit-button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-
-        .register-line {
-          margin-top: 28px;
-          color: #d2d2d2;
-          font-size: 0.95rem;
-          text-align: left;
-        }
-
-        .register-line a {
-          color: #7b4dff;
-          text-decoration: none;
-          font-weight: 700;
-        }
-
-        .register-line a:hover {
-          text-decoration: underline;
-        }
-
-        @media (max-width: 980px) {
-          .login-card {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-panel {
-            padding: 28px;
-            border-radius: 28px 28px 0 0;
-          }
-
-          .form-panel {
-            padding: 40px 28px;
-            border-radius: 0 0 28px 28px;
-          }
-        }
-
-        @media (max-width: 650px) {
-          .page-wrapper {
-            padding: 24px 14px;
-          }
-
-          .form-header h1 {
-            font-size: 2rem;
-          }
-
-          .form-header p {
-            font-size: 0.95rem;
-          }
-        }
-      `}</style>
-
-      <div className="page-wrapper">
-        <div className="login-card">
-          <div className="hero-panel">
-            <img
+    <div className="min-h-screen bg-[#f4efde] flex justify-center overflow-x-hidden font-sans">
+      <div className="w-full max-w-[1280px] flex flex-col lg:flex-row items-start justify-center gap-6 lg:gap-8 px-8 pb-8 pt-28 lg:pt-[27vh]">
+        {/* Lado Esquerdo: Mascote e Logo */}
+        <div className="relative flex flex-col items-center lg:w-[52%]">
+          {/* LOGO: Menor, mais acima e à direita do mascote */}
+          <div className="absolute -top-28 left-[62%] -translate-x-1/2 w-[240px] sm:w-[280px] lg:w-[320px] xl:w-[340px] z-0">
+            <Image
               src="/images/logo_stock.png"
-              alt="Stock.io logo background"
-              className="hero-logo-bg"
-            />
-            <img
-              src="images/Mascote_menina.png"
-              alt="Mascote Stock.io"
-              className="hero-image"
+              alt="Stock.io logo"
+              width={320}
+              height={96}
+              className="object-contain"
+              priority
             />
           </div>
 
-          <div className="form-panel">
-            <div className="form-header">
-              <h1>Bem vindo de volta!</h1>
-              <p>Faça login para continuar</p>
-            </div>
+          {/* MASCOTE: Mais próximo da caixa preta e tamanho maior */}
+          <div className="relative z-10 mt-6 lg:mt-8 flex items-center justify-center">
+            <Image
+              src="/images/Mascote_menina.png"
+              alt="Mascote Stock.io"
+              width={520}
+              height={1118}
+              className="max-h-[92vh] object-contain"
+              priority
+            />
+          </div>
+        </div>
 
-            <form onSubmit={handleLogin} className="form-content">
-              <div className="field-group">
-                <label htmlFor="email">Email</label>
+        {/* Lado Direito: Caixa Preta de Login */}
+        <div className="bg-[#141414] w-full lg:max-w-[654px] rounded-t-[50px] lg:rounded-t-[72px] lg:min-h-[1068px] flex flex-col items-center px-14 lg:px-16 pt-32 lg:pt-36 pb-16 shadow-2xl">
+          <div className="w-full max-w-[500px] flex flex-col items-center">
+            {/* Título: Distante das bordas e dos outros elementos */}
+            <h1 className="text-[#f4efde] text-2xl lg:text-[2.3rem] font-black uppercase tracking-tight mb-20 text-center">
+              BEM VINDO DE VOLTA!
+            </h1>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col items-center gap-10">
+              <div className="w-full relative px-6 sm:px-8">
                 <input
-                  id="email"
+                  {...register('email')}
                   type="email"
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="text-input"
+                  className={`w-full h-14 px-10 rounded-full bg-[#f4efde] text-[#141414] text-lg outline-none placeholder:text-gray-500 border-none transition-all ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-2 focus:ring-[#6f4dff]'}`}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-[10px] px-6 mt-1 absolute left-0 w-full text-center">{errors.email.message}</p>
+                )}
               </div>
 
-              <div className="field-group">
-                <label htmlFor="password">Senha</label>
-                <div className="password-row">
-                  <input
-                    id="password"
-                    type={passwordIsVisible ? "text" : "password"}
-                    placeholder="Senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="text-input"
-                  />
-                  <button
-                    type="button"
-                    className="eye-button"
-                    onClick={() => setPasswordIsVisible(!passwordIsVisible)}
-                    aria-label="Mostrar senha"
-                  >
-                    {passwordIsVisible ? "👁️" : "👁️‍🗨️"}
-                  </button>
-                </div>
+              <div className="w-full relative px-6 sm:px-8">
+                <input
+                  {...register('password')}
+                  type="password"
+                  placeholder="Senha"
+                  className={`w-full h-14 px-10 rounded-full bg-[#f4efde] text-[#141414] text-lg outline-none placeholder:text-gray-500 border-none transition-all ${errors.password ? 'ring-2 ring-red-500' : 'focus:ring-2 focus:ring-[#6f4dff]'}`}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-[10px] px-6 mt-1 absolute left-0 w-full text-center">{errors.password.message}</p>
+                )}
               </div>
 
-              <button type="button" className="forgot-link" onClick={() => setShowResetModal(true)}>
-                Esqueceu sua senha?
-              </button>
+              <div className="w-full flex justify-center mb-16">
+                <button
+                  type="button"
+                  className="text-[#f4efde] opacity-60 text-sm hover:opacity-100 transition-opacity underline underline-offset-4 text-center"
+                  onClick={() => setShowResetModal(true)}
+                >
+                  Esqueceu sua senha?
+                </button>
+              </div>
 
-              <button type="submit" className="submit-button" disabled={loading}>
+              <button
+                type="submit"
+                className="w-full h-16 rounded-full bg-[#6f4dff] text-[#f4efde] text-xl font-black uppercase tracking-widest hover:bg-[#5b3cff] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-xl mb-14"
+                disabled={loading}
+              >
                 {loading ? "Entrando..." : "ENTRAR"}
               </button>
             </form>
 
-            <p className="register-line">
-              Não possui uma conta? <a href="/register">Cadastre-se</a>
-            </p>
+            <div className="text-center mt-6 pb-12">
+              <p className="text-[#f4efde] opacity-60 text-sm lg:text-base">
+                Não possui uma conta? <a href="/register" className="text-[#6f4dff] font-bold hover:underline ml-1">Cadastre-se</a>
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* Modal de Reset de Senha */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#f4efde] p-10 rounded-[40px] w-full max-w-md shadow-2xl">
+            <h2 className="text-[#141414] text-2xl font-black mb-4 uppercase tracking-wider text-center">Recuperar Senha</h2>
+            <p className="mb-8 text-center text-gray-600">Insira seu email para receber as instruções.</p>
+            <form onSubmit={handleForgot} className="space-y-6">
+              <input
+                type="email"
+                placeholder="Seu email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                className="w-full h-14 px-8 rounded-full border border-gray-300 bg-white text-[#141414] outline-none focus:ring-2 focus:ring-[#6f4dff] transition-all"
+              />
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 h-14 rounded-full border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-100 transition-all"
+                >
+                  VOLTAR
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 h-14 rounded-full bg-[#6f4dff] text-[#f4efde] font-bold hover:bg-[#5b3cff] transition-all shadow-md"
+                >
+                  ENVIAR
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

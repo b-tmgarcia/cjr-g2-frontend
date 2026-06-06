@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { login as loginService, logout as logoutService, isAuthenticated, getToken } from '@/services/auth';
-import { User, AuthContextType, LoginCredentials, RegisterCredentials } from '@/types/auth';
+import { login as loginService, logout as logoutService, isAuthenticated } from '@/services/auth';
+import { User, AuthContextType } from '@/types/auth';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,8 +56,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       toast.success('Login realizado com sucesso!');
       router.push('/');
-    } catch (error: any) {
-      const message = error?.response?.data?.message || error?.message || 'Erro ao fazer login';
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string | string[] } } };
+      const message = axiosError.response?.data?.message || (error as Error)?.message || 'Erro ao fazer login';
       toast.error(Array.isArray(message) ? message.join(", ") : message);
       throw error;
     }
@@ -70,14 +71,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     toast.success('Logout realizado com sucesso!');
   };
 
-  const register = async (data: RegisterCredentials) => {
+  const register = async () => {
     try {
       // Implementar chamada de registro aqui
       // const response = await registerService(data);
       toast.success('Cadastro realizado com sucesso! Faça login.');
       router.push('/login');
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao realizar cadastro');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || 'Erro ao realizar cadastro');
       throw error;
     }
   };
