@@ -1,10 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import cameraIcon from "@/public/images/ri_camera-fill.png";
-import diminuirIcon from "@/public/images/diminuir.png";
-import closeIcon from "@/public/images/image_16.png";
-import arrowIcon from "@/public/images/Vector_148.png";
 import { useState, useRef } from "react";
 
 interface ModalAdicionarProdutoProps {
@@ -42,7 +38,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
       <div className="relative bg-[#EBEBEB] rounded-3xl w-[700px] max-h-[90vh] overflow-y-auto px-10 py-7 flex flex-col gap-4 shadow-xl">
 
         <button onClick={onClose} className="absolute top-4 right-5 hover:opacity-70 transition">
-          <Image src={closeIcon} alt="Fechar" width={18} height={18} />
+          <Image src="/images/image_16.png" alt="Fechar" width={18} height={18} />
         </button>
 
         <h2 className="text-center font-spartan font-normal text-[32px] leading-none text-black mt-1">
@@ -58,7 +54,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
           ) : (
             <>
               <div className="relative inline-flex">
-                <Image src={cameraIcon} alt="Câmera" width={44} height={44} />
+                <Image src="/images/ri_camera-fill.png" alt="Câmera" width={44} height={44} />
                 <span className="absolute -bottom-1 -right-1 bg-white rounded-full w-4 h-4 flex items-center justify-center text-[#6A38F3] font-bold text-xs leading-none border border-[#6A38F3]/20">
                   +
                 </span>
@@ -84,7 +80,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
                 <img src={fotos[i]!} alt={`Foto ${i}`} className="w-full h-full object-cover rounded-lg" />
               ) : (
                 <div className="relative inline-flex">
-                  <Image src={cameraIcon} alt="Câmera" width={32} height={32} />
+                  <Image src="/images/ri_camera-fill.png" alt="Câmera" width={32} height={32} />
                   <span className="absolute -bottom-1 -right-1 bg-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[#6A38F3] font-bold text-[9px] leading-none border border-[#6A38F3]/20">
                     +
                   </span>
@@ -115,7 +111,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
             <span className={subcategoria ? "text-gray-700" : "text-gray-400"}>
               {subcategoria || "Subcategoria"}
             </span>
-            <Image src={arrowIcon} alt="Abrir" width={12} height={12} className={`transition-transform duration-200 ${subcategoriaAberta ? "rotate-180" : ""}`} />
+            <Image src="/images/Vector_148.png" alt="Abrir" width={12} height={12} className={`transition-transform duration-200 ${subcategoriaAberta ? "rotate-180" : ""}`} />
           </button>
           {subcategoriaAberta && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg z-10 overflow-hidden">
@@ -150,7 +146,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
 
         <div className="flex items-center justify-center gap-6">
           <button onClick={() => setEstoque(Math.max(0, estoque - 1))}>
-            <Image src={diminuirIcon} alt="Diminuir" width={44} height={44} />
+            <Image src="/images/diminuir.png" alt="Diminuir" width={44} height={44} />
           </button>
           <span className="font-spartan font-normal text-[48px] leading-none text-[#6A38F3] w-16 text-center">
             {estoque}
