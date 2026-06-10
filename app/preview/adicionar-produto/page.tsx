@@ -9,10 +9,8 @@ export default function PreviewAdicionarProduto() {
 
   return (
     <>
-          <Navbar/>
 <div className="min-h-screen bg-white flex items-center justify-center">
       <ModalAdicionarProduto isOpen={aberto} onClose={() => setAberto(false)} />
-        <div>HelLO wORLD</div>
     </div>
     </>
     
