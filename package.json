@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-<<<<<<< Updated upstream
-=======
     "axios": "^1.16.1",
     "jwt-decode": "^4.0.0",
 >>>>>>> Stashed changes
