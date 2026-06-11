@@ -1,0 +1,302 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import Navbar from "@/app/components/navbar";
+import axios from "axios";
+
+interface AvaliacaoAPI {
+  id: number;
+  estrelas: number;
+  texto: string;
+}
+
+interface ImagemAPI {
+  id: number;
+  url: string;
+}
+
+interface ProdutoAPI {
+  id: number;
+  nome: string;
+  descricao: string;
+  preco: number;
+  estoque: number;
+  loja: { id: number; nome: string } | null;
+  categoria: { id: number; nome: string } | null;
+  imagens_produto: ImagemAPI[];
+  avaliacoes_produto: AvaliacaoAPI[];
+}
+
+interface ProdutoRelacionado {
+  nome: string;
+  preco: number;
+  disponivel: boolean;
+  imagem: string;
+}
+
+const avaliacoesComAvatar = [
+  { id: 1, nome: "Selena Gomez", estrelas: 4, texto: "Não é por nada não, mas essa garota arrasa", avatar: "/images/products/Frame-21.png", isOwner: true },
+  { id: 2, nome: "Sofia Figueiredo", estrelas: 5, texto: "Adoro e fico tão orgulhosa", avatar: "/images/products/Group-133.png", isOwner: false },
+  { id: 3, nome: "Michael B. Jordan", estrelas: 5, texto: "Simplesmente incrível, recomendo demais!", avatar: "/images/products/Michael-B.-Jordan.png", isOwner: false },
+  { id: 4, nome: "Zhao Lusi", estrelas: 4, texto: "Muito bom, com certeza vou comprar de novo.", avatar: "/images/products/zhao-lusi.png", isOwner: false },
+];
+
+const produtosMesmaLoja: ProdutoRelacionado[] = [
+  { nome: "Brownie Trad.", preco: 3.8, disponivel: false, imagem: "/images/products/brownie-azul.png" },
+  { nome: "Brownie Doce L.", preco: 4.7, disponivel: true, imagem: "/images/products/image-1.png" },
+  { nome: "Brownie Nozes", preco: 4.7, disponivel: true, imagem: "/images/products/image-2.png" },
+  { nome: "Brownie Cookies", preco: 4.7, disponivel: false, imagem: "/images/products/image-3.png" },
+  { nome: "Brownie M&M", preco: 4.7, disponivel: true, imagem: "/images/products/image-1.png" },
+];
+
+const imagensFallback = [
+  "/images/products/image-1.png",
+  "/images/products/image-2.png",
+  "/images/products/image-3.png",
+  "/images/products/tabela-nutricional-1.png",
+];
+
+function Estrelas({ valor, size = 16 }: { valor: number; size?: number }) {
+  return (
+    <span className="inline-flex gap-0.5" style={{ fontSize: size }}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span key={i} style={{ color: i < Math.floor(valor) ? "#FBBF24" : "#D1D5DB" }}>
+          ★
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export default function ProdutoPage() {
+  const params = useParams();
+  const id = params?.id as string;
+
+  const [produto, setProduto] = useState<ProdutoAPI | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [imagemAtiva, setImagemAtiva] = useState(0);
+
+  const authState = { logado: true, ehDonoDoProduto: true };
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setErro(null);
+
+    axios.get<ProdutoAPI>(`http://localhost:3001/produtos/${id}`)
+      .then((res) => {
+        setProduto(res.data);
+        setImagemAtiva(0);
+      })
+      .catch((err) => {
+        setErro(err.response?.data?.message ?? "Produto não encontrado.");
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const formatarPreco = (v: number) =>
+    `R$${v.toFixed(2).replace(".", ",")}`;
+
+  const mediaEstrelas = produto?.avaliacoes_produto?.length
+    ? produto.avaliacoes_produto.reduce((acc, av) => acc + av.estrelas, 0) / produto.avaliacoes_produto.length
+    : 0;
+
+  const imagens = produto?.imagens_produto?.length
+    ? produto.imagens_produto.map((img) => img.url)
+    : imagensFallback;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F5F0E8]">
+        <Navbar />
+        <div className="flex items-center justify-center h-[60vh]">
+          <p className="text-gray-500 text-lg">Carregando produto...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (erro || !produto) {
+    return (
+      <div className="min-h-screen bg-[#F5F0E8]">
+        <Navbar />
+        <div className="flex items-center justify-center h-[60vh]">
+          <p className="text-red-500 text-lg">{erro ?? "Produto não encontrado."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F5F0E8]">
+      <Navbar />
+
+      <main className="max-w-[1200px] mx-auto px-8 py-10 flex flex-col gap-12">
+
+        {/* ── Seção produto ── */}
+        <section className="flex gap-8 items-start">
+
+          <div className="flex gap-4 shrink-0 items-start">
+
+            <button
+              onClick={() => window.history.back()}
+              className="mt-28 text-gray-400 hover:text-gray-700 transition-colors shrink-0"
+              aria-label="Voltar"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+
+            <div className="flex flex-col gap-3 shrink-0" style={{ width: "100px" }}>
+              {imagens.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setImagemAtiva(i)}
+                  className="relative rounded-2xl overflow-hidden border-2 transition-colors"
+                  style={{
+                    background: "#ECECEC",
+                    width: "100px",
+                    height: "100px",
+                    borderColor: imagemAtiva === i ? "#7C3AED" : "transparent",
+                  }}
+                >
+                  <Image src={img} alt={`Imagem ${i + 1}`} fill className="object-contain p-2" unoptimized />
+                </button>
+              ))}
+            </div>
+
+            <div
+              className="relative rounded-[24px] overflow-hidden shrink-0"
+              style={{ background: "#ECECEC", width: "480px", height: "480px" }}
+            >
+              <Image
+                src={imagens[imagemAtiva]}
+                alt={produto.nome}
+                fill
+                className="object-contain p-8"
+                priority
+                unoptimized
+              />
+              <div className="absolute top-4 right-4 z-10">
+                <Image src="/images/products/Ellipse-4.png" alt="CJR" width={64} height={64} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col gap-5 pt-2 min-w-0">
+
+            <div className="flex items-start gap-2">
+              <h1 className="text-4xl font-semibold leading-tight flex-1">
+                {produto.nome}
+              </h1>
+              {authState.logado && authState.ehDonoDoProduto && (
+                <div className="flex gap-1.5 mt-1 shrink-0">
+                  <button aria-label="Editar produto">
+                    <Image src="/images/products/Group-168.png" alt="Editar" width={30} height={30} />
+                  </button>
+                  <button aria-label="Favoritar produto">
+                    <Image src="/images/products/Group-169.png" alt="Favorito" width={30} height={30} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500">
+              <Estrelas valor={mediaEstrelas} size={14} />
+              <span className="text-gray-700 font-medium">{mediaEstrelas.toFixed(1)}</span>
+              <span>| {produto.avaliacoes_produto?.length ?? 0} reviews</span>
+              {produto.categoria && (
+                <>
+                  <span className="text-gray-300 mx-1">·</span>
+                  <a href="#" className="text-[#6C3CF0] hover:underline font-medium">{produto.categoria.nome}</a>
+                </>
+              )}
+              <span className="text-gray-300 mx-1">·</span>
+              <span className="text-[#6C3CF0] font-medium">{produto.estoque} disponíveis</span>
+            </div>
+
+            <p className="text-4xl font-semibold text-black leading-none">
+              {formatarPreco(produto.preco)}
+            </p>
+
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Descrição</h2>
+              <div className="w-8 h-[2px] rounded-full mb-3" style={{ background: "#D4B896" }} />
+              <p className="text-[13px] text-gray-600 whitespace-pre-line leading-relaxed max-h-52 overflow-y-auto pr-1">
+                {produto.descricao}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Avaliações ── */}
+        <section className="flex flex-col gap-5">
+          <h2 className="text-3xl font-semibold">Avaliações</h2>
+          <div className="flex gap-5 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+            {avaliacoesComAvatar.map((av) => (
+              <div
+                key={av.id}
+                className="bg-white rounded-2xl p-6 shrink-0 flex items-center gap-5"
+                style={{ minWidth: "380px" }}
+              >
+                <div className="relative shrink-0 rounded-full overflow-hidden" style={{ width: "90px", height: "90px" }}>
+                  <Image src={av.avatar} alt={av.nome} fill unoptimized className="object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <p className="font-bold text-base">{av.nome}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Estrelas valor={av.estrelas} size={18} />
+                      {authState.logado && av.isOwner && (
+                        <button aria-label="Editar avaliação" className="text-gray-400 hover:text-gray-600 transition-colors">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed">{av.texto}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Da mesma loja ── */}
+        <section className="flex flex-col gap-4 pb-8">
+          <h2 className="text-3xl font-semibold">Da mesma loja</h2>
+          <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+            {produtosMesmaLoja.map((p, i) => (
+              <button
+                key={i}
+                className="flex flex-col gap-2 shrink-0 text-left hover:opacity-80 transition-opacity bg-white rounded-2xl p-3"
+                style={{ width: "180px" }}
+              >
+                <div className="relative rounded-xl overflow-hidden w-full" style={{ height: "150px", background: "#F5F0E8" }}>
+                  <Image src={p.imagem} alt={p.nome} fill className="object-contain p-2" />
+                  <div className="absolute top-2 right-2 z-10">
+                    <Image src="/images/products/Ellipse-4.png" alt="CJR" width={40} height={40} />
+                  </div>
+                </div>
+                <p className="text-sm font-bold leading-tight px-1">{p.nome}</p>
+                <p className="text-sm text-gray-500 px-1">{formatarPreco(p.preco)}</p>
+                <span className={`text-[11px] font-bold tracking-wide uppercase px-1 ${p.disponivel ? "text-[#6C3CF0]" : "text-red-500"}`}>
+                  {p.disponivel ? "Disponível" : "Indisponível"}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+      </main>
+    </div>
+  );
+}
