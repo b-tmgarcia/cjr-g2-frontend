@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* Basic CSS without Tailwind for now */
 :root {
   --foreground-rgb: 0, 0, 0;
