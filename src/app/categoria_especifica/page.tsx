@@ -47,7 +47,7 @@ const produtosMaisBaratos = [
   { src: '/images/prod_body_splash.png',     nome: 'Body Splash',     preco: 'R$179,99', disponivel: false },
 ];
 
-const produtosModa = [
+const produtosMaisPopulares = [
   { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
   { src: '/images/prod_new_balance.png',   nome: 'New Balance', preco: 'R$399,99', disponivel: false },
   { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
@@ -75,7 +75,7 @@ const lojas = [
 ];
 
 // ─── Página ───────────────────────────────────────────────────────────────────
-export default function FeedPage() {
+export default function CategoriaEspecificaPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000', overflowX: 'hidden' }}>
 
@@ -117,8 +117,8 @@ export default function FeedPage() {
             width: '720px', height: '142px', textAlign: 'right',
           }}>
             <h1 style={{ color: 'white', fontWeight: 1100, fontSize: '3.35rem', lineHeight: 1.0, margin: 0 }}>
-              <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: 700 }}>Do CAOS à organização,</span>
-              <span style={{ display: 'block', fontWeight: 600 }}>em alguns cliques</span>
+              <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: 700 }}>O universo da tecnologia</span>
+              <span style={{ display: 'block', fontWeight: 600 }}>em um só lugar</span>
             </h1>
           </div>
 
@@ -196,7 +196,7 @@ export default function FeedPage() {
         {/* ── Seções de Produtos ─────────────────────────────── */}
         <SecaoProdutos titulo="Produtos" subtitulo="melhores avaliados"  produtos={produtosMelhoresAvaliados} />
         <SecaoProdutos titulo="Produtos" subtitulo="mais baratos"        produtos={produtosMaisBaratos} />
-        <SecaoProdutos titulo="Produtos" subtitulo="moda"                produtos={produtosModa} />
+        <SecaoProdutos titulo="Produtos mais populares" subtitulo="mais populares"      produtos={produtosMaisPopulares} />
         <SecaoProdutos titulo="Produtos" subtitulo="recém adicionados"   produtos={produtosRecentementeAdicionados} />
 
         {/* ── Lojas ──────────────────────────────────────────── */}
