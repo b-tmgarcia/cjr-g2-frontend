@@ -1,39 +1,45 @@
-Para encontrar o código page.tsx da Tela de Feed, vá para:
-src -> app -> feed -> page.tsx
+# Projeto Trainee de 2026.01 da CJR (UnB) do grupo 2 "Chapeleiros Malucos"
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Este repositório contém o frontend do projeto `cjr-g2-frontend`, uma aplicação Next.js construída com React, TypeScript, Tailwind CSS e algumas bibliotecas de suporte.
 
-## Getting Started
+## Sobre
 
-First, run the development server:
+- Frontend criado com Next.js
+- Usando TypeScript e ESLint
+- Estilização com Tailwind CSS
+- Componentes de interface e ícones com `react-icons`
+- Feedback visual com `react-toastify`
+
+## Como rodar
+
+Instale as dependências e inicie o servidor de desenvolvimento:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000) no navegador para ver o app em execução.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estrutura importante
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O código da tela de feed está em:
 
-## Learn More
+- `src/app/feed/page.tsx`
 
-To learn more about Next.js, take a look at the following resources:
+Outros arquivos chave:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `src/app/components/SecaoProdutos.tsx`
+- `src/app/components/ProdutoCard.tsx`
+- `tsconfig.json`
+- `package.json`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Aprendizado
 
-## Deploy on Vercel
+Este projeto serve como parte do treinamento de desenvolvimento frontend e demonstra integração entre Next.js, TypeScript, Tailwind e bibliotecas auxiliares.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Links úteis
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Learn Next.js](https://nextjs.org/learn)
+- [Vercel Deployment](https://nextjs.org/docs/app/deploying)
