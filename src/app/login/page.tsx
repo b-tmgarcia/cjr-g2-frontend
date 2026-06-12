@@ -78,13 +78,12 @@ export default function LoginPage() {
               src="/images/logo_stock.png"
               alt="Stock.io logo"
               width={320}
-              height={96}
+              height={60}
               className="object-contain"
               priority
             />
           </div>
 
-          {/* MASCOTE: Mais próximo da caixa preta e tamanho maior */}
           <div className="relative z-10 mt-6 lg:mt-8 flex items-center justify-center">
             <Image
               src="/images/Mascote_menina.png"
