@@ -71,7 +71,8 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#F4EFDE', overflowX: 'hidden', position: 'relative' }}>
       
       {/* Container Base da Tela do Figma (1440px de largura centralizado) */}
-      <div style={{ width: '1440px', height: '1200px', margin: '0 auto', position: 'relative' }}>
+            <div style={{ width: '1440px', margin: '0 auto', backgroundColor: '#F6F3E4', position: 'relative', zIndex: 1 }}>
+
         
         {/* LOGO 
             Figma: width 421, height 267, top -45px, left 105px */}
