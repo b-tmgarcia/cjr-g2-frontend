@@ -1,9 +1,5 @@
 // fazer uma merge da dev na minha branch
-// criar um card de produtos (.tsx)
-// uma de sessão produtos (barra de rolagem) 
-// import sessao de produtos dentro da page.tsx
-// sessao de produtos tb tem o import da card de produtos
-// no backend o Jose Carlos usa npm run start:dev, mas no frontend usa npm run dev
+// no backend usa npm run start:dev, mas no frontend usa npm run dev
 // TC New Request http:/localhost:3001/user JSON Content {"email": "john@example.com", "senha": "123456"} 
 
 'use client';
