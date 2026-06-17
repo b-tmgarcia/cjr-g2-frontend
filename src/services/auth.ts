@@ -26,19 +26,20 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     }
     
     return response.data;
-  } catch (error: any) {
-    if (error.response) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response: { data: { message?: string } } };
       throw {
         response: {
           data: {
-            message: error.response.data.message || 'Erro ao fazer login'
+            message: axiosError.response.data.message || 'Erro ao fazer login'
           }
         }
       };
-    } else if (error.request) {
+    } else if (error && typeof error === 'object' && 'request' in error) {
       throw new Error('Erro de conexão com o servidor');
     } else {
-      throw new Error(error.message || 'Erro desconhecido');
+      throw new Error((error as Error).message || 'Erro desconhecido');
     }
   }
 };
@@ -49,15 +50,16 @@ export const forgotPassword = async (email: string): Promise<ForgotPasswordRespo
       email: email.trim() 
     });
     return response.data;
-  } catch (error: any) {
-    if (error.response) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response: { data: { message?: string } } };
       throw {
-        message: error.response.data.message || 'Erro ao enviar email de recuperação'
+        message: axiosError.response.data.message || 'Erro ao enviar email de recuperação'
       };
-    } else if (error.request) {
+    } else if (error && typeof error === 'object' && 'request' in error) {
       throw new Error('Erro de conexão com o servidor');
     } else {
-      throw new Error(error.message || 'Erro desconhecido');
+      throw new Error((error as Error).message || 'Erro desconhecido');
     }
   }
 };

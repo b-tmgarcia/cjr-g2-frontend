@@ -1,10 +1,7 @@
 "use client";
 
 import Image from "next/image";
-
 import Link from "next/link";
-
-
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
@@ -24,9 +21,14 @@ export default function Navbar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      const { userId } = jwtDecode<UserDataProps>(token);
-      setMyId(userId);
-      setIsLoggedIn(true);
+      try {
+        const { userId } = jwtDecode<UserDataProps>(token);
+        setMyId(userId);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error);
+        setIsLoggedIn(false);
+      }
     } else {
       setIsLoggedIn(false);
     }
