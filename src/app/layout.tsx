@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { League_Spartan } from 'next/font/google';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from '@/services/contexts/AuthContext';
 import './globals.css';
 import type { ReactNode } from 'react';
 
-const inter = Inter({ subsets: ['latin'] });
+const leagueSpartan = League_Spartan({
+  weight: "600",
+  subsets: ["latin"],
+  variable: "--font-league-spartan",
+});
 
 export const metadata: Metadata = {
-  title: 'Login App',
-  description: 'Aplicação de login com Next.js',
+  title: "Stock.IO",
+  description: "Stock.IO App",
 };
 
 export default function RootLayout({
@@ -19,8 +23,8 @@ export default function RootLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>
+    <html lang="pt-BR" className={leagueSpartan.variable}>
+      <body className="antialiased">
         <AuthProvider>
           <ToastContainer position="top-right" />
           {children}
