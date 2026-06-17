@@ -1,81 +1,55 @@
-// fazer uma merge da dev na minha branch
-// criar um card de produtos (.tsx)
-// uma de sessão produtos (barra de rolagem) 
-// import sessao de produtos dentro da page.tsx
-// sessao de produtos tb tem o import da card de produtos
-// no backend o Jose Carlos usa npm run start:dev, mas no frontend usa npm run dev
-// TC New Request http:/localhost:3001/user JSON Content {"email": "john@example.com", "senha": "123456"} 
-
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { LuLogOut } from 'react-icons/lu';
 import { IoPersonSharp } from 'react-icons/io5';
-import { CiSearch, CiShoppingBasket } from 'react-icons/ci';
-import { BsCapsulePill } from 'react-icons/bs';
-import { GiLipstick } from 'react-icons/gi';
-import { PiDress, PiHouseLight } from 'react-icons/pi';
-import { MdOutlineComputer } from 'react-icons/md';
-import { IoGameControllerOutline } from 'react-icons/io5';
-import { TbHorseToy } from 'react-icons/tb';
+import { CiSearch } from 'react-icons/ci';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
+import { 
+  getProdutosMelhoresAvaliados, 
+  getProdutosMaisBaratos, 
+  getProdutosModa, 
+  getProdutosRecentementeAdicionados 
+} from '@/services/productService';
+import { getCategorias } from '@/services/categoryService';
+import { getLojasFeed } from '@/services/storeService';
+import type { Produto } from '@/mocks/products';
+import type { Categoria } from '@/mocks/categories';
+import type { Loja } from '@/mocks/stores';
 
-const categorias: { label: string; icon: React.ReactNode }[] = [
-  { label: 'Mercado',     icon: <CiShoppingBasket size={28} /> },
-  { label: 'Farmácia',    icon: <BsCapsulePill size={24} /> },
-  { label: 'Beleza',      icon: <GiLipstick size={24} /> },
-  { label: 'Moda',        icon: <PiDress size={40} /> },
-  { label: 'Eletrônicos', icon: <MdOutlineComputer size={26} /> },
-  { label: 'Jogos',       icon: <IoGameControllerOutline size={26} /> },
-  { label: 'Brinquedos',  icon: <TbHorseToy size={26} /> },
-  { label: 'Casa',        icon: <PiHouseLight size={26} /> },
-];
-
-const produtosMelhoresAvaliados = [
-  { src: '/images/prod_brownie_meio.png', nome: 'Brownie Meio A.',  preco: 'R$4,70',  disponivel: true  },
-  { src: '/images/prod_brownie_trad.png', nome: 'Brownie Trad.',    preco: 'R$3,80',  disponivel: false },
-  { src: '/images/prod_nozes.png',        nome: 'Nozes',            preco: 'R$29,99', disponivel: true,  unidade: '/kg' },
-  { src: '/images/prod_banana.png',       nome: 'Banana',           preco: 'R$3,99',  disponivel: true,  unidade: '/kg' },
-  { src: '/images/prod_limao.png',        nome: 'Limão Siciliano',  preco: 'R$17,99', disponivel: false, unidade: '/kg' },
-];
-
-const produtosMaisBaratos = [
-  { src: '/images/prod_limpador_facial.png', nome: 'Limpador Facial', preco: 'R$74,99',  disponivel: true  },
-  { src: '/images/prod_blush.png',           nome: 'Blush',           preco: 'R$199,99', disponivel: false },
-  { src: '/images/prod_serum.png',           nome: 'Sérum Facial',    preco: 'R$99,90',  disponivel: true  },
-  { src: '/images/prod_iluminador.png',      nome: 'Iluminador',      preco: 'R$249,90', disponivel: true  },
-  { src: '/images/prod_body_splash.png',     nome: 'Body Splash',     preco: 'R$179,99', disponivel: false },
-];
-
-const produtosModa = [
-  { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
-  { src: '/images/prod_new_balance.png',   nome: 'New Balance', preco: 'R$399,99', disponivel: false },
-  { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
-  { src: '/images/prod_bolsa.png',         nome: 'Bolsa',       preco: 'R$349,90', disponivel: true  },
-  { src: '/images/prod_saia.png',          nome: 'Saia Jeans',  preco: 'R$159,99', disponivel: false },
-];
-
-const produtosRecentementeAdicionados = [
-  { src: '/images/prod_bolsa.png',         nome: 'Bolsa',       preco: 'R$349,90', disponivel: true  },
-  { src: '/images/prod_blush.png',         nome: 'Blush',       preco: 'R$159,99', disponivel: false },
-  { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
-  { src: '/images/prod_new_balance.png',   nome: 'New Balance', preco: 'R$399,99', disponivel: false },
-  { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
-];
-
-const lojas = [
-  { src: '/images/lojas_cjr.png',         nome: 'CJR',           categoria: 'mercado'      },
-  { src: '/images/lojas_rare_beauty.png',  nome: 'Rare Beauty',   categoria: 'beleza'       },
-  { src: '/images/lojas_the_croc.png',    nome: 'The Croc Brew', categoria: 'mercado'      },
-  { src: '/images/lojas_mini_reno.png',    nome: 'Mini Reno',     categoria: 'casa'         },
-  { src: '/images/lojas_amoca.png',       nome: 'amoca',         categoria: 'moda'         },
-  { src: '/images/lojas_repliit.png',      nome: 'Repiit',        categoria: 'eletrônicos'  },
-  { src: '/images/lojas_electree.png',     nome: 'electree',      categoria: 'eletrônicos'  },
-  { src: '/images/lojas_abtec.png',        nome: 'abtec',         categoria: 'eletrônicos'  },
-];
-
-// ─── Página ───────────────────────────────────────────────────────────────────
 export default function FeedPage() {
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [produtosMelhoresAvaliados, setProdutosMelhoresAvaliados] = useState<Produto[]>([]);
+  const [produtosMaisBaratos, setProdutosMaisBaratos] = useState<Produto[]>([]);
+  const [produtosModa, setProdutosModa] = useState<Produto[]>([]);
+  const [produtosRecentementeAdicionados, setProdutosRecentementeAdicionados] = useState<Produto[]>([]);
+  const [lojas, setLojas] = useState<Loja[]>([]);
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const [cats, pBest, pCheap, pFashion, pRecent, stores] = await Promise.all([
+          getCategorias(),
+          getProdutosMelhoresAvaliados(),
+          getProdutosMaisBaratos(),
+          getProdutosModa(),
+          getProdutosRecentementeAdicionados(),
+          getLojasFeed()
+        ]);
+        setCategorias(cats);
+        setProdutosMelhoresAvaliados(pBest);
+        setProdutosMaisBaratos(pCheap);
+        setProdutosModa(pFashion);
+        setProdutosRecentementeAdicionados(pRecent);
+        setLojas(stores);
+      } catch (error) {
+        console.error("Erro ao carregar dados do feed:", error);
+      }
+    };
+    carregarDados();
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000', overflowX: 'hidden' }}>
 
