@@ -68,96 +68,212 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4efde] flex justify-center overflow-x-hidden font-sans">
-      <div className="w-full max-w-[1280px] flex flex-col lg:flex-row items-start justify-center gap-6 lg:gap-8 px-8 pb-8 pt-28 lg:pt-[27vh]">
-        {/* Lado Esquerdo: Mascote e Logo */}
-        <div className="relative flex flex-col items-center lg:w-[52%]">
-          {/* LOGO: Menor, mais acima e à direita do mascote */}
-          <div className="absolute -top-28 left-[62%] -translate-x-1/2 w-[240px] sm:w-[280px] lg:w-[320px] xl:w-[340px] z-0">
-            <Image
-              src="/images/logo_stock.png"
-              alt="Stock.io logo"
-              width={320}
-              height={60}
-              className="object-contain"
-              priority
-            />
-          </div>
-
-          <div className="relative z-10 mt-6 lg:mt-8 flex items-center justify-center">
-            <Image
-              src="/images/Mascote_menina.png"
-              alt="Mascote Stock.io"
-              width={520}
-              height={1118}
-              className="max-h-[92vh] object-contain"
-              priority
-            />
-          </div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F4EFDE', overflowX: 'hidden', position: 'relative' }}>
+      
+      {/* Container Base da Tela do Figma (1440px de largura centralizado) */}
+      <div style={{ width: '1440px', height: '1200px', margin: '0 auto', position: 'relative' }}>
+        
+        {/* LOGO 
+            Figma: width 421, height 267, top -45px, left 105px */}
+        <div style={{ position: 'absolute', width: '421px', height: '267px', top: '-0px', left: '105px', zIndex: 10 }}>
+          <Image
+            src="/images/logo_stock_login.png"
+            alt="Stock.io logo"
+            width={421}
+            height={267}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
         </div>
 
-        {/* Lado Direito: Caixa Preta de Login */}
-        <div className="bg-[#141414] w-full lg:max-w-[654px] rounded-t-[50px] lg:rounded-t-[72px] lg:min-h-[1068px] flex flex-col items-center px-14 lg:px-16 pt-32 lg:pt-36 pb-16 shadow-2xl">
-          <div className="w-full max-w-[500px] flex flex-col items-center">
-            {/* Título: Distante das bordas e dos outros elementos */}
-            <h1 className="text-[#f4efde] text-2xl lg:text-[2.3rem] font-black uppercase tracking-tight mb-20 text-center">
+        {/* MASCOTE 
+            Figma: width 512.55, height 1118.5, top 222px, left 105px */}
+        <div style={{ position: 'absolute', width: '512.55px', height: '1118.5px', top: '222px', left: '105px', zIndex: 5 }}>
+          <Image
+            src="/images/Mascote_tela_de_login.png"
+            alt="Mascote Stock.io"
+            width={513}
+            height={1119}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        </div>
+
+        {/* CAIXA PRETA DE LOGIN 
+            Figma: width 654, height 1068, top 111px, left 701px */}
+        <div style={{
+          position: 'absolute',
+          width: '654px',
+          height: '1068px',
+          top: '111px',
+          left: '701px',
+          backgroundColor: '#141414',
+          borderRadius: '48px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          zIndex: 10
+        }}>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            
+            {/* BEM VINDO DE VOLTA 
+                Figma: width 475, height 31, top 223px (em relação à tela, logo dentro da caixa preta fica 223 - 111 = 112px), left 790px (na caixa: 790 - 701 = 89px) */}
+            <h1 style={{
+              position: 'absolute',
+              top: '112px',
+              left: '89px',
+              width: '475px',
+              height: '31px',
+              color: '#F4EFDE',
+              fontSize: '2rem',
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              letterSpacing: '-0.05em',
+              margin: 0,
+              textAlign: 'center'
+            }}>
               BEM VINDO DE VOLTA!
             </h1>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col items-center gap-10">
-              <div className="w-full relative px-6 sm:px-8">
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="Email"
-                  className={`w-full h-14 px-10 rounded-full bg-[#f4efde] text-[#141414] text-lg outline-none placeholder:text-gray-500 border-none transition-all ${errors.email ? 'ring-2 ring-red-500' : 'focus:ring-2 focus:ring-[#6f4dff]'}`}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-[10px] px-6 mt-1 absolute left-0 w-full text-center">{errors.email.message}</p>
-                )}
-              </div>
-
-              <div className="w-full relative px-6 sm:px-8">
-                <input
-                  {...register('password')}
-                  type="password"
-                  placeholder="Senha"
-                  className={`w-full h-14 px-10 rounded-full bg-[#f4efde] text-[#141414] text-lg outline-none placeholder:text-gray-500 border-none transition-all ${errors.password ? 'ring-2 ring-red-500' : 'focus:ring-2 focus:ring-[#6f4dff]'}`}
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-[10px] px-6 mt-1 absolute left-0 w-full text-center">{errors.password.message}</p>
-                )}
-              </div>
-
-              <div className="w-full flex justify-center mb-16">
-                <button
-                  type="button"
-                  className="text-[#f4efde] opacity-60 text-sm hover:opacity-100 transition-opacity underline underline-offset-4 text-center"
-                  onClick={() => setShowResetModal(true)}
-                >
-                  Esqueceu sua senha?
-                </button>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full h-16 rounded-full bg-[#6f4dff] text-[#f4efde] text-xl font-black uppercase tracking-widest hover:bg-[#5b3cff] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-xl mb-14"
-                disabled={loading}
-              >
-                {loading ? "Entrando..." : "ENTRAR"}
-              </button>
-            </form>
-
-            <div className="text-center mt-6 pb-12">
-              <p className="text-[#f4efde] opacity-60 text-sm lg:text-base">
-                Não possui uma conta? <a href="/register" className="text-[#6f4dff] font-bold hover:underline ml-1">Cadastre-se</a>
-              </p>
+            {/* INPUT - EMAIL 
+                Figma: width 504, height 48, top 314px (na caixa: 314 - 111 = 203px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{ position: 'absolute', top: '203px', left: '75px', width: '504px', height: '48px' }}>
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="Email"
+                style={{
+                  width: '504px',
+                  height: '48px',
+                  padding: '0 28px',
+                  borderRadius: '72px',
+                  backgroundColor: '#F4EFDE',
+                  color: '#141414',
+                  fontSize: '1.1rem',
+                  border: errors.email ? '2px solid #ef4444' : 'none',
+                  outline: 'none',
+                }}
+              />
+              {errors.email && (
+                <p style={{ color: '#ef4444', fontSize: '11px', position: 'absolute', bottom: '-20px', left: '20px', margin: 0 }}>
+                  {errors.email.message}
+                </p>
+              )}
             </div>
-          </div>
+
+            {/* INPUT - SENHA 
+                Figma: width 504, height 48, top 392px (na caixa: 392 - 111 = 281px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{ position: 'absolute', top: '281px', left: '75px', width: '504px', height: '48px' }}>
+              <input
+                {...register('password')}
+                type="password"
+                placeholder="Senha"
+                style={{
+                  width: '504px',
+                  height: '48px',
+                  padding: '0 28px',
+                  borderRadius: '72px',
+                  backgroundColor: '#F4EFDE',
+                  color: '#141414',
+                  fontSize: '1.1rem',
+                  border: errors.password ? '2px solid #ef4444' : 'none',
+                  outline: 'none',
+                }}
+              />
+              {errors.password && (
+                <p style={{ color: '#ef4444', fontSize: '11px', position: 'absolute', bottom: '-20px', left: '20px', margin: 0 }}>
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* ESQUECEU A SENHA 
+                Figma: top 470px (na caixa: 470 - 111 = 359px), left 937px (na caixa: 937 - 701 = 236px) */}
+            <button
+              type="button"
+              onClick={() => setShowResetModal(true)}
+              style={{
+                position: 'absolute',
+                top: '359px',
+                left: '236px',
+                width: '183px',
+                height: '20px',
+                background: 'none',
+                border: 'none',
+                color: '#F4EFDE',
+                opacity: 0.6,
+                fontSize: '16px', // <--- Aumentado aqui!
+                textDecoration: 'underline',
+                textUnderlineOffset: '4px',
+                cursor: 'pointer',
+                textAlign: 'right',
+                padding: 0
+              }}
+            >
+              Esqueceu sua senha?
+            </button>
+
+            {/* BOTÃO ENTRAR 
+                Figma: width 504, height 52, top 520px (na caixa: 520 - 111 = 409px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                position: 'absolute',
+                top: '409px',
+                left: '75px',
+                width: '504px',
+                height: '52px',
+                borderRadius: '76px',
+                backgroundColor: '#6f4dff',
+                color: '#F4EFDE',
+                fontSize: '1.25rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 14px rgba(111, 77, 255, 0.4)',
+                transition: 'all 0.2s'
+              }}
+            >
+              {loading ? "Entrando..." : "ENTRAR"}
+            </button>
+
+            {/* TEXTO CADASTRE-SE 
+                Figma: width 373, height 23, top 602px (na caixa: 602 - 111 = 491px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{
+              position: 'absolute',
+              top: '491px',
+              left: '75px',
+              width: '504px', // <--- Aumentei o limite da caixa para garantir que não quebre de jeito nenhum
+              height: '23px',
+              color: '#F4EFDE',
+              fontFamily: 'League Spartan, sans-serif',
+              fontWeight: 300,
+              fontSize: '21px', // <--- Diminuído levemente para alinhar em uma linha só
+              lineHeight: '100%',
+              letterSpacing: '0%',
+              whiteSpace: 'nowrap' // <--- Impede o navegador de quebrar a linha por segurança
+            }}>
+              Não possui uma conta?{' '}
+              <a
+                href="/register"
+                style={{
+                  color: '#6f4dff',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                Cadastre-se
+              </a>
+            </div>
+          </form>
         </div>
+
       </div>
 
-      {/* Modal de Reset de Senha */}
+      {/* Modal de Reset de Senha (Mantido por fora com overlay) */}
       {showResetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[#f4efde] p-10 rounded-[40px] w-full max-w-md shadow-2xl">
