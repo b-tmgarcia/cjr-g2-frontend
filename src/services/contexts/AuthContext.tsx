@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { login as loginService, logout as logoutService, isAuthenticated } from '@/services/auth';
-import { User, AuthContextType } from '@/types/auth';
+import { User, AuthContextType, RegisterCredentials } from '@/types/auth';
 import { toast } from 'react-toastify';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     toast.success('Logout realizado com sucesso!');
   };
 
-  const register = async () => {
+  const register = async (data: RegisterCredentials) => {
     try {
       // Implementar chamada de registro aqui
       // const response = await registerService(data);

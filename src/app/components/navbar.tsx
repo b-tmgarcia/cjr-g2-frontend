@@ -1,10 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import stockioLogo from "../../../public/images/LOGO_Stock_io.png";
 import Link from "next/link";
-import profileIcon from "../../../public/images/ion_person.png";
-import logoutIcon from "../../../public/images/fluent_arrow-exit-28-filled.png";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
@@ -24,9 +21,14 @@ export default function Navbar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      const { userId } = jwtDecode<UserDataProps>(token);
-      setMyId(userId);
-      setIsLoggedIn(true);
+      try {
+        const { userId } = jwtDecode<UserDataProps>(token);
+        setMyId(userId);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error);
+        setIsLoggedIn(false);
+      }
     } else {
       setIsLoggedIn(false);
     }
@@ -55,7 +57,7 @@ export default function Navbar() {
               className="transition duration-200"
             >
               <Image
-                src={profileIcon}
+                src="/images/ion_person.png"
                 alt="Perfil"
                 width={26}
                 height={26}
@@ -76,7 +78,7 @@ export default function Navbar() {
               className="transition duration-200"
             >
               <Image
-                src={logoutIcon}
+                src="/images/fluent_arrow-exit-28-filled.png"
                 alt="LogOut"
                 width={26}
                 height={26}
@@ -111,7 +113,7 @@ export default function Navbar() {
 
   return (
     <nav className="flex w-full py-3 bg-[#171918] items-center justify-between px-16 border-b border-white/5">
-      <Image src={stockioLogo} width={180} alt="stock.io" loading="eager" />
+      <Image src="/images/logo_stock.png" width={180} height={40} alt="stock.io" loading="eager" />
       <AuthButtons />
     </nav>
   );
