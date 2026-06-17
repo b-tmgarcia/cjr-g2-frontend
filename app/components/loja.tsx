@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import Image from "next/image";
 import { League_Spartan } from "next/font/google";
-import { LojaAPI, ProdutoAPI, AvaliacaoLojaAPI } from "../../services/lojas";
+import { LojaAPI, ProdutoAPI, AvaliacaoLojaAPI } from "../services/lojas";
 
 const spartan = League_Spartan({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
