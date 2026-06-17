@@ -116,7 +116,7 @@ export default function CategoriaEspecificaPage() {
             width: '572px', height: '780px',
             zIndex: 0, pointerEvents: 'none',
           }}>
-            <Image src="/images/mascote_feed.png" alt="Mascote Stock.io" width={572} height={780}
+            <Image src="/images/mascote_categorias.png" alt="Mascote Stock.io" width={572} height={780}
               style={{ objectFit: 'contain', objectPosition: 'center', width: '100%', height: '100%' }} priority />
           </div>
         </div>
