@@ -1,6 +1,5 @@
-
-import Navbar from "@/app/components/navbar";
-import Loja from "@/app/components/loja";
+import Navbar from "../../components/navbar";
+import Loja from "../../components/loja";
 import { getLoja } from "../../services/lojas";
 
 export default async function LojaPage({ params }: { params: { id?: string } }) {
