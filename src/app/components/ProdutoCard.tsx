@@ -30,8 +30,8 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
 
       <p style={{
         position: 'absolute', top: '187px', left: '22px',
-        width: '190px', height: '25px',
-        fontWeight: 700, color: '#111827', fontSize: '0.95rem',
+        width: '190px', height: '35px',
+        fontWeight: 600, color: '#111827', fontSize: '1.325rem',
         margin: 0, overflow: 'hidden', textOverflow: 'ellipsis',
       }}>
         {nome}
@@ -40,7 +40,7 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
       <p style={{
         position: 'absolute', top: '220px', left: '22.09px',
         width: '83px', height: '19px',
-        fontWeight: 600, color: '#1f2937', fontSize: '0.9rem', margin: 0,
+        fontWeight: 600, color: '#1f2937', fontSize: '1.25rem', margin: 0,
       }}>
         {preco}
         {unidade && (
