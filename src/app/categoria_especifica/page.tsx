@@ -8,85 +8,11 @@ import { CiSearch } from 'react-icons/ci';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
 import { ProdutoCard } from '@/app/components/ProdutoCard';
-
-// ══════════════════════════════════════════════════════
-// PRODUTOS EXTRAÍDOS DOS PRINTS DO FIGMA (POR PÁGINA)
-// ══════════════════════════════════════════════════════
-
-const pagina1Produtos = [
-  { src: '/images/prod_Comp_Lenovo_Repiit.png', nome: 'Cabo USB', preco: 'R$16,90', disponivel: true },
-  { src: '/images/prod_Comp_Samsung_Repiit.png', nome: 'Micro SD', preco: 'R$179,90', disponivel: true },
-  { src: '/images/prod_Iphone15_Bersay.png', nome: 'Iphone 4', preco: 'R$469,99', disponivel: true },
-  { src: '/images/prod_Smart_Tv_Philips_Repiit.png', nome: 'Playstation 5', preco: 'R$4.992,98', disponivel: true },
-  { src: '/images/prod_Xbox_Series_X_Hobby.png', nome: 'Galaxy Z Fold', preco: 'R$13.999,99', disponivel: true },
-  { src: '/images/prod_Mackbook_Air_Repiit.png', nome: 'Nintendo 3DS', preco: 'R$2.089,99', disponivel: false },
-  { src: '/images/prod_Iphone_16.png', nome: 'Galaxy A06', preco: 'R$588,00', disponivel: false },
-  { src: '/images/prod_serum.png', nome: 'Monitor', preco: 'R$ 988,00', disponivel: true },
-  { src: '/images/prod_iluminador.png', nome: 'Teclado e mouse', preco: 'R$165,00', disponivel: true },
-  { src: '/images/prod_body_splash.png', nome: 'Mouse', preco: 'R$81,00', disponivel: false },
-  { src: '/images/prod_saia.png', nome: 'Smart TV Neo', preco: 'R$4.999,00', disponivel: false },
-  { src: '/images/prod_new_balance.png', nome: 'Soundbar', preco: 'R$1.044,05', disponivel: false },
-  { src: '/images/prod_bota.png', nome: 'Vitrola', preco: 'R$559,99', disponivel: true },
-  { src: '/images/prod_bolsa.png', nome: 'Monitor', preco: 'R$1.199,00', disponivel: true },
-  { src: '/images/prod_saia.png', nome: 'Smart TV', preco: 'R$1.699,99', disponivel: true },
-];
-
-const pagina2Produtos = [
-  { src: '/images/prod_Comp_Lenovo_Repiit.png', nome: 'Comp. Lenovo', preco: 'R$3.899,99', disponivel: true },
-  { src: '/images/prod_Comp_Samsung_Repiit.png', nome: 'Comp. Samsung', preco: 'R$8.549,99', disponivel: false },
-  { src: '/images/prod_Iphone15_Bersay.png', nome: 'Iphone 15', preco: 'R$4.769,10', disponivel: true },
-  { src: '/images/prod_Smart_Tv_Philips_Repiit.png', nome: 'Smart Tv Philips', preco: 'R$1.229,00', disponivel: true },
-  { src: '/images/prod_Xbox_Series_X_Hobby.png', nome: 'Xbox Series X', preco: 'R$3.599,99', disponivel: true },
-  { src: '/images/prod_Mackbook_Air_Repiit.png', nome: 'Macbook Air', preco: 'R$15.899,99', disponivel: true },
-  { src: '/images/prod_Iphone_16.png', nome: 'Iphone 16', preco: 'R$4.598,99', disponivel: false },
-  { src: '/images/prod_serum.png', nome: 'S25 Ultra', preco: 'R$5.769,10', disponivel: true },
-  { src: '/images/prod_iluminador.png', nome: 'Ipad', preco: 'R$7.859,00', disponivel: true },
-  { src: '/images/prod_body_splash.png', nome: 'Headset Gamer', preco: 'R$899,99', disponivel: false },
-  { src: '/images/prod_saia.png', nome: 'Comp. Lenovo', preco: 'R$649,99', disponivel: false },
-  { src: '/images/prod_new_balance.png', nome: 'Nintendo S. 2', preco: 'R$4.799,99', disponivel: false },
-  { src: '/images/prod_bota.png', nome: 'Iphone 15', preco: 'R$4.089,10', disponivel: true },
-  { src: '/images/prod_bolsa.png', nome: 'JBL', preco: 'R$1.399,00', disponivel: true },
-  { src: '/images/prod_saia.png', nome: 'Xbox Series S', preco: 'R$1.499,99', disponivel: true },
-];
-
-const pagina3Produtos = [...pagina1Produtos];
-const pagina4Produtos = [...pagina1Produtos];
-const pagina5Produtos = [...pagina1Produtos];
-
-const produtosPorPagina: { [key: number]: any[] } = {
-  1: pagina1Produtos,
-  2: pagina2Produtos,
-  3: pagina3Produtos,
-  4: pagina4Produtos,
-  5: pagina5Produtos,
-};
-
-const MaisPopularesBackup = [
-  { src: '/images/prod_Comp_Lenovo_Repiit.png', nome: 'Comp. Lenovo', preco: 'R$3.899,99', disponivel: true },
-  { src: '/images/prod_new_balance.png', nome: 'New Balance', preco: 'R$399,99', disponivel: false },
-  { src: '/images/prod_bota.png', nome: 'Bota', preco: 'R$115,90', disponivel: true },
-  { src: '/images/prod_bolsa.png', nome: 'Bolsa', preco: 'R$349,90', disponivel: true },
-  { src: '/images/prod_saia.png', nome: 'Saia Jeans', preco: 'R$159,99', disponivel: false },
-];
-
-const RecemAdicionadosBackup = [
-  { src: '/images/prod_bolsa.png', nome: 'Bolsa', preco: 'R$349,90', disponivel: true },
-  { src: '/images/prod_blush.png', nome: 'Blush', preco: 'R$159,99', disponivel: false },
-  { src: '/images/prod_saia.png', nome: 'Saia', preco: 'R$75,99',  disponivel: true },
-  { src: '/images/prod_new_balance.png', nome: 'New Balance', preco: 'R$399,99', disponivel: false },
-  { src: '/images/prod_bota.png', nome: 'Bota', preco: 'R$115,90', disponivel: true },
-]; 
-
-const lojas = [
-  { src: '/images/lojas_abtec.png', nome: 'abtec', categoria: 'eletrônicos' },
-  { src: '/images/lojas_repliit.png', nome: 'Repiit', categoria: 'eletrônicos' },
-  { src: '/images/lojas_rare_beauty.png', nome: 'Bersay', categoria: 'eletrônicos' },
-  { src: '/images/lojas_electree.png', nome: 'electree', categoria: 'eletrônicos' },
-  { src: '/images/lojas_mini_reno.png', nome: 'Speed X', categoria: 'eletrônicos' },
-  { src: '/images/lojas_amoca.png', nome: 'Next Computer', categoria: 'eletrônicos' },
-];
-
-const pilulasCategoriasBackup = ['Celulares', 'Notebooks', 'TVs', 'Acessórios', 'Outros'];
+import { getProdutosPorPagina, getMaisPopulares, getRecemAdicionados } from '@/services/productService';
+import { getCategoriaInfo } from '@/services/categoryService';
+import { getLojasCategoria } from '@/services/storeService';
+import type { Produto } from '@/mocks/products';
+import type { Loja } from '@/mocks/stores';
 
 export default function CategoriaEspecificaPage() {
   const [dropdownAberto, setDropdownAberto] = useState(false);
@@ -95,59 +21,51 @@ export default function CategoriaEspecificaPage() {
   // Controle de Paginação Interativa
   const [pagina, setPagina] = useState(1);
 
-  // Estados dos dados que alternam entre o banco (CRUD) e o backup
+  // Estados dos dados
   const [nomeCategoria, setNomeCategoria] = useState('O universo da tecnologia');
-  const [pilulasCategorias, setPilulasCategorias] = useState<string[]>(pilulasCategoriasBackup);
-  const [produtosBanco, setProdutosBanco] = useState<{ [key: number]: any[] } | null>(null);
-  
-  const [maisPopulares, setMaisPopulares] = useState<any[]>(MaisPopularesBackup);
-  const [recemAdicionados, setRecemAdicionados] = useState<any[]>(RecemAdicionadosBackup);
+  const [pilulasCategorias, setPilulasCategorias] = useState<string[]>([]);
+  const [produtosExibidos, setProdutosExibidos] = useState<Produto[]>([]);
+  const [maisPopulares, setMaisPopulares] = useState<Produto[]>([]);
+  const [recemAdicionados, setRecemAdicionados] = useState<Produto[]>([]);
+  const [lojas, setLojas] = useState<Loja[]>([]);
 
   useEffect(() => {
-    async function carregarDadosDoCRUD() {
+    async function carregarDadosIniciais() {
       try {
-        const res = await fetch('http://localhost:3001/categorias/1');
-        if (!res.ok) return;
-        
-        const dados = await res.json();
-        
-        if (dados) {
-          setNomeCategoria(dados.nome || 'O universo da tecnologia');
-          
-          if (dados.subcategorias && dados.subcategorias.length > 0) {
-            setPilulasCategorias(dados.subcategorias.map((sub: any) => sub.nome));
-          }
-          
-          if (dados.produtos && dados.produtos.length > 0) {
-            const produtosFormatados = dados.produtos.map((p: any) => ({
-              src: p.src || '/images/prod_Comp_Lenovo_Repiit.png',
-              nome: p.nome,
-              preco: p.preco,
-              disponivel: p.disponivel ?? true
-            }));
+        const [info, populares, recentes, stores] = await Promise.all([
+          getCategoriaInfo('1'),
+          getMaisPopulares(),
+          getRecemAdicionados(),
+          getLojasCategoria()
+        ]);
 
-            const paginasMontadas: { [key: number]: any[] } = {};
-            for (let i = 1; i <= 5; i++) {
-              const inicio = (i - 1) * 15;
-              const fim = inicio + 15;
-              const fatiado = produtosFormatados.slice(inicio, fim);
-              paginasMontadas[i] = fatiado.length > 0 ? fatiado : produtosPorPagina[i];
-            }
-
-            setProdutosBanco(paginasMontadas);
-            setMaisPopulares(produtosFormatados.slice(0, 5));
-            setRecemAdicionados(produtosFormatados.slice().reverse().slice(0, 5));
+        if (info) {
+          setNomeCategoria(info.nome);
+          if (info.subcategorias) {
+            setPilulasCategorias(info.subcategorias.map((sub: any) => sub.nome));
           }
         }
+        setMaisPopulares(populares);
+        setRecemAdicionados(recentes);
+        setLojas(stores);
       } catch (error) {
-        console.log("Aviso: Backend offline. Carregando dados estáticos mapeados por página.");
+        console.error("Erro ao carregar dados da categoria:", error);
       }
     }
-
-    carregarDadosDoCRUD();
+    carregarDadosIniciais();
   }, []);
 
-  const produtosExibidos = produtosBanco ? produtosBanco[pagina] : produtosPorPagina[pagina];
+  useEffect(() => {
+    async function carregarProdutosDaPagina() {
+      try {
+        const produtos = await getProdutosPorPagina(pagina);
+        setProdutosExibidos(produtos);
+      } catch (error) {
+        console.error(`Erro ao carregar produtos da página ${pagina}:`, error);
+      }
+    }
+    carregarProdutosDaPagina();
+  }, [pagina]);
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000', overflowX: 'hidden' }}>
