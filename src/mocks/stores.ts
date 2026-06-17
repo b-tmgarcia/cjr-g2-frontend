@@ -1,20 +1,25 @@
-export const stores = [
-  {
-    id: 1,
-    nome: "Rare Beauty",
-    categoria: "Beleza",
-    banner: "/images/Rectangle_37.png",
-    usuario: { 
-      id: 1, 
-      nome: "Selena Gomez", 
-      email: "selena@rarebeauty.com" 
-    },
-    produtos: [
-      { id: 1, nome: "Bronzer", preco: 254.99, disponivel: true, imagem: "/images/bronzer.png" },
-      { id: 2, nome: "Blush", preco: 199.99, disponivel: false, imagem: "/images/blush.png" }
-    ],
-    avaliacoes_loja: [
-      { id: 1, nota: 5, comentario: "Produtos incríveis!", usuario: { id: 2, nome: "Sofia" } }
-    ]
-  }
+export interface Loja {
+  src: string;
+  nome: string;
+  categoria: string;
+}
+
+export const lojasFeedMock: Loja[] = [
+  { src: '/images/lojas_cjr.png',         nome: 'CJR',           categoria: 'mercado'      },
+  { src: '/images/lojas_rare_beauty.png',  nome: 'Rare Beauty',   categoria: 'beleza'       },
+  { src: '/images/lojas_the_croc.png',    nome: 'The Croc Brew', categoria: 'mercado'      },
+  { src: '/images/lojas_mini_reno.png',    nome: 'Mini Reno',     categoria: 'casa'         },
+  { src: '/images/lojas_amoca.png',       nome: 'amoca',         categoria: 'moda'         },
+  { src: '/images/lojas_repliit.png',      nome: 'Repiit',        categoria: 'eletrônicos'  },
+  { src: '/images/lojas_electree.png',     nome: 'electree',      categoria: 'eletrônicos'  },
+  { src: '/images/lojas_abtec.png',        nome: 'abtec',         categoria: 'eletrônicos'  },
+];
+
+export const lojasCategoriaMock: Loja[] = [
+  { src: '/images/lojas_abtec.png', nome: 'abtec', categoria: 'eletrônicos' },
+  { src: '/images/lojas_repliit.png', nome: 'Repiit', categoria: 'eletrônicos' },
+  { src: '/images/lojas_rare_beauty.png', nome: 'Bersay', categoria: 'eletrônicos' },
+  { src: '/images/lojas_electree.png', nome: 'electree', categoria: 'eletrônicos' },
+  { src: '/images/lojas_mini_reno.png', nome: 'Speed X', categoria: 'eletrônicos' },
+  { src: '/images/lojas_amoca.png', nome: 'Next Computer', categoria: 'eletrônicos' },
 ];
