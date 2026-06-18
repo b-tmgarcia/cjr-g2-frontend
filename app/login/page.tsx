@@ -1,34 +1,47 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import Image from 'next/image';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { login, forgotPassword } from '../services/auth';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { login, forgotPassword } from '@/services/auth';
+
+const loginSchema = z.object({
+  email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
-  const [passwordIsVisible, setPasswordIsVisible] = useState(false);
 
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast.error("Por favor preencha todos os campos");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (values: LoginFormValues) => {
     try {
       setLoading(true);
-      const data = await login(email, password);
+      const data = await login(values.email, values.password);
       localStorage.setItem('token', data.token);
       toast.success("Login bem-sucedido! Redirecionando...");
       setTimeout(() => {
-        router.push('/feed');
+        router.push('/');
       }, 2500);
-    } catch (error: any) {
-      const message = error?.response?.data?.message;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string | string[] } } };
+      const message = axiosError.response?.data?.message;
       toast.error(
         Array.isArray(message) ? message.join(", ") : message || "Erro ao fazer login"
       );
@@ -37,7 +50,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgot = async (e: FormEvent) => {
+  const handleForgot = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!resetEmail) {
       toast.error("Por favor insira seu email para redefinir a senha.");
@@ -48,296 +61,244 @@ export default function LoginPage() {
       toast.success(data.message || "Email de recuperação enviado!");
       setShowResetModal(false);
       setResetEmail('');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao enviar email de recuperação");
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || "Erro ao enviar email de recuperação");
     }
   };
 
   return (
-    <>
-      <style jsx>{`
-        .page-wrapper {
-          min-height: 100vh;
-          padding: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f4efde;
-        }
-        .login-card {
-          display: grid;
-          grid-template-columns: minmax(320px, 460px) minmax(340px, 520px);
-          width: min(980px, 100%);
-          min-height: calc(100vh - 48px);
-          overflow: visible;
-          background: transparent;
-        }
-        .hero-panel {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f4efde;
-          padding: 36px 28px;
-          border-radius: 56px 0 0 56px;
-          overflow: hidden;
-        }
-        .hero-logo-bg {
-          position: absolute;
-          top: -24px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 421px;
-          height: 267px;
-          opacity: 0.22;
-          filter: brightness(0.18) saturate(0.8);
-          pointer-events: none;
-          z-index: 0;
-        }
-        .hero-image {
-          position: relative;
-          width: 100%;
-          max-width: 450px;
-          height: auto;
-          z-index: 1;
-          object-fit: contain;
-        }
-        .form-panel {
-          width: 100%;
-          margin: 0;
-          min-height: 100%;
-          padding: 76px 40px 40px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          background: #141414;
-          color: #f4f4f4;
-          border-radius: 56px 56px 0 0;
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-        }
-        .form-header h1 {
-          margin: 0;
-          font-size: 2.6rem;
-          letter-spacing: 0.15em;
-          color: #f4f4f4;
-          text-transform: uppercase;
-        }
-        .form-header p {
-          margin: 16px 0 36px;
-          color: #bdbdbd;
-          font-size: 0.98rem;
-        }
-        .form-content {
-          display: grid;
-          gap: 18px;
-        }
-        .field-group {
-          display: grid;
-          gap: 8px;
-        }
-        .text-input {
-          width: 100%;
-          padding: 18px 22px;
-          border-radius: 999px;
-          border: none;
-          background: #f4f4e8;
-          color: #232323;
-          font-size: 1rem;
-          outline: none;
-          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-        }
-        .text-input::placeholder {
-          color: #9d9d9d;
-        }
-        .password-row {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-        .password-row .text-input {
-          padding-right: 58px;
-        }
-        .eye-button {
-          position: absolute;
-          right: 18px;
-          background: none;
-          border: none;
-          color: #777;
-          font-size: 1.15rem;
-          cursor: pointer;
-        }
-        .forgot-link {
-          align-self: flex-start;
-          background: none;
-          border: none;
-          color: #e3e3e3;
-          font-size: 0.92rem;
-          text-decoration: underline;
-          cursor: pointer;
-          padding: 0;
-          margin: 4px 0 16px;
-        }
-        .submit-button {
-          width: 100%;
-          padding: 18px 20px;
-          border-radius: 999px;
-          border: none;
-          background: #6f4dff;
-          color: white;
-          font-size: 1rem;
-          font-weight: 800;
-          cursor: pointer;
-          transition: transform 0.18s ease, background 0.18s ease;
-          box-shadow: 0 18px 30px rgba(111, 77, 255, 0.18);
-        }
-        .submit-button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          background: #5b3cff;
-        }
-        .submit-button:disabled {
-          opacity: 0.7;
-          cursor: not-allowed;
-        }
-        .register-line {
-          margin-top: 28px;
-          color: #d2d2d2;
-          font-size: 0.95rem;
-          text-align: left;
-        }
-        .register-line a {
-          color: #7b4dff;
-          text-decoration: none;
-          font-weight: 700;
-        }
-        .register-line a:hover {
-          text-decoration: underline;
-        }
-        @media (max-width: 980px) {
-          .login-card {
-            grid-template-columns: 1fr;
-          }
-          .hero-panel {
-            padding: 28px;
-            border-radius: 28px 28px 0 0;
-          }
-          .form-panel {
-            padding: 40px 28px;
-            border-radius: 0 0 28px 28px;
-          }
-        }
-        @media (max-width: 650px) {
-          .page-wrapper {
-            padding: 24px 14px;
-          }
-          .form-header h1 {
-            font-size: 2rem;
-          }
-          .form-header p {
-            font-size: 0.95rem;
-          }
-        }
-      `}</style>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F4EFDE', overflowX: 'hidden', position: 'relative' }}>
+      
+      {/* Container Base da Tela do Figma (1440px de largura centralizado) */}
+            <div style={{ width: '1440px', margin: '0 auto', backgroundColor: '#F6F3E4', position: 'relative', zIndex: 1 }}>
 
-      <div className="page-wrapper">
-        <div className="login-card">
-          <div className="hero-panel">
-            <img src="/images/logo_stock.png" alt="Stock.io logo background" className="hero-logo-bg" />
-            <img src="/images/Mascote_menina.png" alt="Mascote Stock.io" className="hero-image" />
-          </div>
+        
+        {/* LOGO 
+            Figma: width 421, height 267, top -45px, left 105px */}
+        <div style={{ position: 'absolute', width: '421px', height: '267px', top: '-0px', left: '105px', zIndex: 10 }}>
+          <Image
+            src="/images/logo_stock_login.png"
+            alt="Stock.io logo"
+            width={421}
+            height={267}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        </div>
 
-          <div className="form-panel">
-            <div className="form-header">
-              <h1>Bem vindo de volta!</h1>
-              <p>Faça login para continuar</p>
+        {/* MASCOTE 
+            Figma: width 512.55, height 1118.5, top 222px, left 105px */}
+        <div style={{ position: 'absolute', width: '512.55px', height: '1118.5px', top: '222px', left: '105px', zIndex: 5 }}>
+          <Image
+            src="/images/Mascote_tela_de_login.png"
+            alt="Mascote Stock.io"
+            width={513}
+            height={1119}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        </div>
+
+        {/* CAIXA PRETA DE LOGIN 
+            Figma: width 654, height 1068, top 111px, left 701px */}
+        <div style={{
+          position: 'absolute',
+          width: '654px',
+          height: '1068px',
+          top: '111px',
+          left: '701px',
+          backgroundColor: '#141414',
+          borderRadius: '48px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          zIndex: 10
+        }}>
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
+            
+            {/* BEM VINDO DE VOLTA 
+                Figma: width 475, height 31, top 223px (em relação à tela, logo dentro da caixa preta fica 223 - 111 = 112px), left 790px (na caixa: 790 - 701 = 89px) */}
+            <h1 style={{
+              position: 'absolute',
+              top: '112px',
+              left: '89px',
+              width: '475px',
+              height: '31px',
+              color: '#F4EFDE',
+              fontSize: '2rem',
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              letterSpacing: '-0.05em',
+              margin: 0,
+              textAlign: 'center'
+            }}>
+              BEM VINDO DE VOLTA!
+            </h1>
+
+            {/* INPUT - EMAIL 
+                Figma: width 504, height 48, top 314px (na caixa: 314 - 111 = 203px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{ position: 'absolute', top: '203px', left: '75px', width: '504px', height: '48px' }}>
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="Email"
+                style={{
+                  width: '504px',
+                  height: '48px',
+                  padding: '0 28px',
+                  borderRadius: '72px',
+                  backgroundColor: '#F4EFDE',
+                  color: '#141414',
+                  fontSize: '1.1rem',
+                  border: errors.email ? '2px solid #ef4444' : 'none',
+                  outline: 'none',
+                }}
+              />
+              {errors.email && (
+                <p style={{ color: '#ef4444', fontSize: '11px', position: 'absolute', bottom: '-20px', left: '20px', margin: 0 }}>
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
-            <form onSubmit={handleLogin} className="form-content">
-              <div className="field-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="text-input"
-                />
-              </div>
+            {/* INPUT - SENHA 
+                Figma: width 504, height 48, top 392px (na caixa: 392 - 111 = 281px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{ position: 'absolute', top: '281px', left: '75px', width: '504px', height: '48px' }}>
+              <input
+                {...register('password')}
+                type="password"
+                placeholder="Senha"
+                style={{
+                  width: '504px',
+                  height: '48px',
+                  padding: '0 28px',
+                  borderRadius: '72px',
+                  backgroundColor: '#F4EFDE',
+                  color: '#141414',
+                  fontSize: '1.1rem',
+                  border: errors.password ? '2px solid #ef4444' : 'none',
+                  outline: 'none',
+                }}
+              />
+              {errors.password && (
+                <p style={{ color: '#ef4444', fontSize: '11px', position: 'absolute', bottom: '-20px', left: '20px', margin: 0 }}>
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
-              <div className="field-group">
-                <label htmlFor="password">Senha</label>
-                <div className="password-row">
-                  <input
-                    id="password"
-                    type={passwordIsVisible ? "text" : "password"}
-                    placeholder="Senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="text-input"
-                  />
-                  <button
-                    type="button"
-                    className="eye-button"
-                    onClick={() => setPasswordIsVisible(!passwordIsVisible)}
-                    aria-label="Mostrar senha"
-                  >
-                    {passwordIsVisible ? "👁️" : "👁️‍🗨️"}
-                  </button>
-                </div>
-              </div>
+            {/* ESQUECEU A SENHA 
+                Figma: top 470px (na caixa: 470 - 111 = 359px), left 937px (na caixa: 937 - 701 = 236px) */}
+            <button
+              type="button"
+              onClick={() => setShowResetModal(true)}
+              style={{
+                position: 'absolute',
+                top: '359px',
+                left: '236px',
+                width: '183px',
+                height: '20px',
+                background: 'none',
+                border: 'none',
+                color: '#F4EFDE',
+                opacity: 0.6,
+                fontSize: '16px', // <--- Aumentado aqui!
+                textDecoration: 'underline',
+                textUnderlineOffset: '4px',
+                cursor: 'pointer',
+                textAlign: 'right',
+                padding: 0
+              }}
+            >
+              Esqueceu sua senha?
+            </button>
 
-              <button type="button" className="forgot-link" onClick={() => setShowResetModal(true)}>
-                Esqueceu sua senha?
-              </button>
+            {/* BOTÃO ENTRAR 
+                Figma: width 504, height 52, top 520px (na caixa: 520 - 111 = 409px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                position: 'absolute',
+                top: '409px',
+                left: '75px',
+                width: '504px',
+                height: '52px',
+                borderRadius: '76px',
+                backgroundColor: '#6f4dff',
+                color: '#F4EFDE',
+                fontSize: '1.25rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                boxShadow: '0 4px 14px rgba(111, 77, 255, 0.4)',
+                transition: 'all 0.2s'
+              }}
+            >
+              {loading ? "Entrando..." : "ENTRAR"}
+            </button>
 
-              <button type="submit" className="submit-button" disabled={loading}>
-                {loading ? "Entrando..." : "ENTRAR"}
-              </button>
-            </form>
-
-            <p className="register-line">
-              Não possui uma conta? <a href="/register">Cadastre-se</a>
-            </p>
-          </div>
+            {/* TEXTO CADASTRE-SE 
+                Figma: width 373, height 23, top 602px (na caixa: 602 - 111 = 491px), left 776px (na caixa: 776 - 701 = 75px) */}
+            <div style={{
+              position: 'absolute',
+              top: '491px',
+              left: '75px',
+              width: '504px', // <--- Aumentei o limite da caixa para garantir que não quebre de jeito nenhum
+              height: '23px',
+              color: '#F4EFDE',
+              fontFamily: 'League Spartan, sans-serif',
+              fontWeight: 300,
+              fontSize: '21px', // <--- Diminuído levemente para alinhar em uma linha só
+              lineHeight: '100%',
+              letterSpacing: '0%',
+              whiteSpace: 'nowrap' // <--- Impede o navegador de quebrar a linha por segurança
+            }}>
+              Não possui uma conta?{' '}
+              <a
+                href="/register"
+                style={{
+                  color: '#6f4dff',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                Cadastre-se
+              </a>
+            </div>
+          </form>
         </div>
+
       </div>
 
-      {/* Modal Recuperar Senha */}
+      {/* Modal de Reset de Senha (Mantido por fora com overlay) */}
       {showResetModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 50,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', padding: '16px',
-        }}>
-          <div style={{
-            background: '#f4efde', padding: '40px', borderRadius: '40px',
-            width: '100%', maxWidth: '420px', boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-          }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#141414', textAlign: 'center' }}>
-              Recuperar Senha
-            </h2>
-            <p style={{ marginBottom: '28px', textAlign: 'center', color: '#666', fontSize: '0.95rem' }}>
-              Insira seu email para receber as instruções.
-            </p>
-            <form onSubmit={handleForgot} style={{ display: 'grid', gap: '16px' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#f4efde] p-10 rounded-[40px] w-full max-w-md shadow-2xl">
+            <h2 className="text-[#141414] text-2xl font-black mb-4 uppercase tracking-wider text-center">Recuperar Senha</h2>
+            <p className="mb-8 text-center text-gray-600">Insira seu email para receber as instruções.</p>
+            <form onSubmit={handleForgot} className="space-y-6">
               <input
                 type="email"
                 placeholder="Seu email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                style={{ borderRadius: '999px', padding: '16px 22px', background: 'white', border: '1px solid #ddd', fontSize: '1rem', outline: 'none', width: '100%' }}
+                className="w-full h-14 px-8 rounded-full border border-gray-300 bg-white text-[#141414] outline-none focus:ring-2 focus:ring-[#6f4dff] transition-all"
               />
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={() => { setShowResetModal(false); setResetEmail(''); }}
-                  style={{ flex: 1, padding: '16px', borderRadius: '999px', border: '2px solid #ccc', background: 'transparent', color: '#555', fontWeight: 700, cursor: 'pointer' }}
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 h-14 rounded-full border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-100 transition-all"
                 >
                   VOLTAR
                 </button>
                 <button
                   type="submit"
-                  style={{ flex: 1, padding: '16px', borderRadius: '999px', border: 'none', background: '#6f4dff', color: 'white', fontWeight: 700, cursor: 'pointer' }}
+                  className="flex-1 h-14 rounded-full bg-[#6f4dff] text-[#f4efde] font-bold hover:bg-[#5b3cff] transition-all shadow-md"
                 >
                   ENVIAR
                 </button>
@@ -346,6 +307,6 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import Navbar from "../../components/navbar";
 import Loja from "../../components/loja";
-import { getLoja } from "../../services/lojas";
+import { getLoja } from "../../../services/lojas";
 
 export default async function LojaPage({ params }: { params: { id?: string } }) {
   const id = Number(params.id) || 1;
