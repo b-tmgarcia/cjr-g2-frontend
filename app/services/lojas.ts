@@ -1,4 +1,4 @@
-import { stores } from "../mocks/stores";
+import api from "./api";
 
 export interface ProdutoAPI {
   id: number;
@@ -26,7 +26,6 @@ export interface LojaAPI {
 }
 
 export async function getLoja(id: number): Promise<LojaAPI> {
-  const loja = stores.find((s) => s.id === id);
-  if (!loja) throw new Error("Loja não encontrada");
-  return loja as LojaAPI;
+  const response = await api.get<LojaAPI>(`/lojas/${id}`);
+  return response.data;
 }
