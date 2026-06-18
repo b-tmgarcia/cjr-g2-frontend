@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import stockioLogo from "../../public/images/LOGO_Stock_io.png";
+import stockioLogo from "@/public/images/LOGO_Stock_io.png";
 import Link from "next/link";
-import profileIcon from "../../public/images/ion_person.png";
-import logoutIcon from "../../public/images/fluent_arrow-exit-28-filled.png";
+import profileIcon from "@/public/images/ion_person.png";
+import logoutIcon from "@/public/images/fluent_arrow-exit-28-filled.png";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
