@@ -2,13 +2,17 @@
 
 import Image from "next/image";
 import { useState, useRef } from "react";
+import { toast } from "react-toastify";
+import api from "../services/api"; 
 
 interface ModalAdicionarProdutoProps {
   isOpen: boolean;
   onClose: () => void;
+  lojaId: number;
+  onSuccess: () => void;
 }
 
-export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdicionarProdutoProps) {
+export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSuccess }: ModalAdicionarProdutoProps) {
   const [fotos, setFotos] = useState<(string | null)[]>([null, null, null, null]);
   const [nome, setNome] = useState("");
   const [subcategoria, setSubcategoria] = useState("");
@@ -16,6 +20,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
   const [descricao, setDescricao] = useState("");
   const [preco, setPreco] = useState("");
   const [estoque, setEstoque] = useState(13);
+  const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
   const handleFotoChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,8 +32,57 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
     }
   };
 
-  const handleAdicionar = () => {
-    console.log({ nome, subcategoria, descricao, preco, estoque, fotos });
+  const handleAdicionar = async () => {
+    if (!nome || !preco) {
+      toast.error("O nome e o preço são obrigatórios.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Mapeamento simples para converter o nome da categoria em ID numérico
+      const categoriaMap: Record<string, number> = {
+        "Eletrônicos": 1,
+        "Roupas": 2,
+        "Alimentos": 3,
+        "Acessórios": 4,
+        "Outros": 5
+      };
+
+      const precoNumerico = parseFloat(preco.replace(",", "."));
+
+      // PAYLOAD CORRIGIDO PARA BATER COM O BACKEND
+      const payload = {
+        nome,
+        descricao,
+        preco: precoNumerico,
+        estoque,
+        loja_id: lojaId, // Ajustado para loja_id (snake_case)
+        categoria_id: categoriaMap[subcategoria] || 1, // Converte a string para ID
+      };
+
+      // Chamada da API
+      await api.post("/produtos", payload);
+
+      toast.success("Produto adicionado com sucesso!");
+      
+      // Limpeza dos estados
+      setNome("");
+      setDescricao("");
+      setPreco("");
+      setEstoque(13);
+      setSubcategoria("");
+      setFotos([null, null, null, null]);
+
+      onSuccess(); 
+      onClose(); 
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Erro ao adicionar o produto.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -164,9 +218,10 @@ export default function ModalAdicionarProduto({ isOpen, onClose }: ModalAdiciona
 
         <button
           onClick={handleAdicionar}
-          className="w-full bg-[#6A38F3] hover:bg-[#5229d4] text-white font-spartan font-semibold text-[15px] rounded-full py-3 transition duration-200"
+          disabled={loading}
+          className="w-full bg-[#6A38F3] hover:bg-[#5229d4] disabled:opacity-60 text-white font-spartan font-semibold text-[15px] rounded-full py-3 transition duration-200"
         >
-          Adicionar
+          {loading ? "Adicionando..." : "Adicionar"}
         </button>
 
       </div>

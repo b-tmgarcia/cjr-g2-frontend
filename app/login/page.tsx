@@ -7,7 +7,8 @@ import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { login, forgotPassword } from '@/services/auth';
+import { login, forgotPassword } from '../services/auth';
+import ModalAlterarSenha from '../components/ModalAlterarSenha';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido').min(1, 'Email é obrigatório'),
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -34,17 +36,16 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const data = await login(values.email, values.password);
-      localStorage.setItem('token', data.token);
+      
+      localStorage.setItem('token', data.access_token);
       toast.success("Login bem-sucedido! Redirecionando...");
       setTimeout(() => {
-        router.push('/');
+        router.push('/feed');
       }, 2500);
-    } catch (error: unknown) {
-      const axiosError = error as { response?: { data?: { message?: string | string[] } } };
-      const message = axiosError.response?.data?.message;
-      toast.error(
-        Array.isArray(message) ? message.join(", ") : message || "Erro ao fazer login"
-      );
+    } catch (error: any) {
+      console.error(error);
+      setError('password', { type: 'manual', message: 'Senha incorreta' });
+      
     } finally {
       setLoading(false);
     }
@@ -71,7 +72,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#F4EFDE', overflowX: 'hidden', position: 'relative' }}>
       
       {/* Container Base da Tela do Figma (1440px de largura centralizado) */}
-            <div style={{ width: '1440px', margin: '0 auto', backgroundColor: '#F6F3E4', position: 'relative', zIndex: 1 }}>
+      <div style={{ width: '1440px', margin: '0 auto', backgroundColor: '#F6F3E4', position: 'relative', zIndex: 1 }}>
 
         
         {/* LOGO 
@@ -202,7 +203,7 @@ export default function LoginPage() {
                 border: 'none',
                 color: '#F4EFDE',
                 opacity: 0.6,
-                fontSize: '16px', // <--- Aumentado aqui!
+                fontSize: '16px',
                 textDecoration: 'underline',
                 textUnderlineOffset: '4px',
                 cursor: 'pointer',
@@ -246,19 +247,19 @@ export default function LoginPage() {
               position: 'absolute',
               top: '491px',
               left: '75px',
-              width: '504px', // <--- Aumentei o limite da caixa para garantir que não quebre de jeito nenhum
+              width: '504px',
               height: '23px',
               color: '#F4EFDE',
               fontFamily: 'League Spartan, sans-serif',
               fontWeight: 300,
-              fontSize: '21px', // <--- Diminuído levemente para alinhar em uma linha só
+              fontSize: '21px',
               lineHeight: '100%',
               letterSpacing: '0%',
-              whiteSpace: 'nowrap' // <--- Impede o navegador de quebrar a linha por segurança
+              whiteSpace: 'nowrap'
             }}>
               Não possui uma conta?{' '}
               <a
-                href="/register"
+                href="/cadastro" // 🚀 AJUSTADO: Corrigido o caminho para a sua tela real de cadastro
                 style={{
                   color: '#6f4dff',
                   fontWeight: 500,
@@ -273,40 +274,12 @@ export default function LoginPage() {
         </div>
 
       </div>
-
-      {/* Modal de Reset de Senha (Mantido por fora com overlay) */}
-      {showResetModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#f4efde] p-10 rounded-[40px] w-full max-w-md shadow-2xl">
-            <h2 className="text-[#141414] text-2xl font-black mb-4 uppercase tracking-wider text-center">Recuperar Senha</h2>
-            <p className="mb-8 text-center text-gray-600">Insira seu email para receber as instruções.</p>
-            <form onSubmit={handleForgot} className="space-y-6">
-              <input
-                type="email"
-                placeholder="Seu email"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full h-14 px-8 rounded-full border border-gray-300 bg-white text-[#141414] outline-none focus:ring-2 focus:ring-[#6f4dff] transition-all"
-              />
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowResetModal(false)}
-                  className="flex-1 h-14 rounded-full border-2 border-gray-300 text-gray-600 font-bold hover:bg-gray-100 transition-all"
-                >
-                  VOLTAR
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 h-14 rounded-full bg-[#6f4dff] text-[#f4efde] font-bold hover:bg-[#5b3cff] transition-all shadow-md"
-                >
-                  ENVIAR
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+     <ModalAlterarSenha
+        isOpen={showResetModal}
+        onClose={() => setShowResetModal(false)}
+        onBack={() => setShowResetModal(false)}
+        userId={0}
+      />
     </div>
   );
 }
