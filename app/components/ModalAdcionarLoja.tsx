@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import api from "../services/api";
+import { jwtDecode } from "jwt-decode";
 
 interface ModalAdcionarLojaProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface ModalAdcionarLojaProps {
 }
 
 export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLojaProps) {
+  const [arquivos, setArquivos] = useState<(File | null)[]>([null, null, null]);
   const [fotos, setFotos] = useState<(string | null)[]>([null, null, null]);
   const [nome, setNome] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -18,15 +21,81 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
   const handleFotoChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const newArquivos = [...arquivos];
+      newArquivos[index] = file;
+      setArquivos(newArquivos);
+
       const newFotos = [...fotos];
       newFotos[index] = URL.createObjectURL(file);
       setFotos(newFotos);
     }
   };
 
-  const handleAdicionar = () => {
-    console.log({ nome, categoria, fotos });
-    onClose();
+  const [categoriasLista, setCategoriasLista] = useState<{id: number, nome: string}[]>([]);
+  const [categoriaId, setCategoriaId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchCategorias() {
+      try {
+        const response = await api.get('/categorias');
+        setCategoriasLista(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar categorias", error);
+      }
+    }
+    fetchCategorias();
+  }, []);
+
+  const handleAdicionar = async () => {
+    if (!nome) {
+      alert("Nome da loja é obrigatório.");
+      return;
+    }
+
+    if (!categoriaId) {
+      alert("Categoria da loja é obrigatória.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Você precisa estar logado para criar uma loja.");
+        return;
+      }
+
+      const decoded = jwtDecode<{ userId: number }>(token);
+      
+      const urls: (string | undefined)[] = [undefined, undefined, undefined];
+      
+      for (let i = 0; i < 3; i++) {
+        if (arquivos[i]) {
+          const formData = new FormData();
+          formData.append('file', arquivos[i] as File);
+          const response = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          urls[i] = response.data.url;
+        }
+      }
+
+      const novaLoja = {
+        usuario_id: decoded.userId,
+        nome: nome,
+        categoria_id: categoriaId,
+        logo_url: urls[1],
+        banner_url: urls[2],
+        sticker_url: urls[0],
+      };
+
+      await api.post('/lojas', novaLoja);
+      
+      alert("Loja criada com sucesso!");
+      onClose();
+    } catch (error) {
+      console.error(error);
+      alert("Ocorreu um erro ao criar a loja.");
+    }
   };
 
   if (!isOpen) return null;
@@ -75,16 +144,24 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
               />
             </button>
             {categoriaAberta && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-lg z-10 overflow-hidden py-2">
-                {["Moda", "Alimentação", "Serviços", "Tecnologia", "Outros"].map((cat) => (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-lg z-10 overflow-hidden py-2 max-h-48 overflow-y-auto">
+                {categoriasLista.length > 0 ? categoriasLista.map((cat) => (
                   <button
-                    key={cat}
-                    onClick={() => { setCategoria(cat); setCategoriaAberta(false); }}
+                    key={cat.id}
+                    onClick={() => { 
+                      setCategoria(cat.nome); 
+                      setCategoriaId(cat.id);
+                      setCategoriaAberta(false); 
+                    }}
                     className="w-full text-left px-8 py-3 font-spartan font-light text-[18px] text-gray-700 hover:bg-[#6A38F3]/10 transition"
                   >
-                    {cat}
+                    {cat.nome}
                   </button>
-                ))}
+                )) : (
+                  <div className="w-full text-left px-8 py-3 font-spartan font-light text-[18px] text-gray-500">
+                    Nenhuma categoria encontrada
+                  </div>
+                )}
               </div>
             )}
           </div>

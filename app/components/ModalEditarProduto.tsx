@@ -3,43 +3,87 @@
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
-import api from "../services/api"; 
+import api from "../services/api";
 
-interface ModalAdicionarProdutoProps {
+interface ImagemExistente {
+  id: number;
+  url_imagem: string;
+  ordem: number;
+}
+
+interface ProdutoParaEditar {
+  id: number;
+  nome: string;
+  descricao?: string;
+  preco: number;
+  estoque: number;
+  categoria_id?: number;
+  imagens_produto?: ImagemExistente[];
+}
+
+interface ModalEditarProdutoProps {
   isOpen: boolean;
   onClose: () => void;
-  lojaId: number;
+  produto: ProdutoParaEditar | null;
   onSuccess: () => void;
 }
 
-export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSuccess }: ModalAdicionarProdutoProps) {
+const CATEGORIA_NOME_POR_ID: Record<number, string> = {
+  1: "Eletrônicos",
+  2: "Roupas",
+  3: "Alimentos",
+  4: "Acessórios",
+  5: "Outros",
+};
+
+const CATEGORIA_ID_POR_NOME: Record<string, number> = {
+  "Eletrônicos": 1,
+  "Roupas": 2,
+  "Alimentos": 3,
+  "Acessórios": 4,
+  "Outros": 5,
+};
+
+function urlFoto(url: string) {
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `http://localhost:3001${url}`;
+}
+
+export default function ModalEditarProduto({ isOpen, onClose, produto, onSuccess }: ModalEditarProdutoProps) {
   const [fotos, setFotos] = useState<(string | null)[]>([null, null, null, null]);
   const [arquivos, setArquivos] = useState<(File | null)[]>([null, null, null, null]);
+  const [imagensExistentesIds, setImagensExistentesIds] = useState<(number | null)[]>([null, null, null, null]);
   const [nome, setNome] = useState("");
   const [subcategoria, setSubcategoria] = useState("");
   const [subcategoriaAberta, setSubcategoriaAberta] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [preco, setPreco] = useState("");
-  const [estoque, setEstoque] = useState(13);
+  const [estoque, setEstoque] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [confirmandoExclusao, setConfirmandoExclusao] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
-  const [categoriasLista, setCategoriasLista] = useState<{id: number, nome: string}[]>([]);
-  const [categoriaId, setCategoriaId] = useState<number | null>(null);
-
   useEffect(() => {
-    async function fetchCategorias() {
-      try {
-        const response = await api.get('/categorias');
-        setCategoriasLista(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar categorias", error);
-      }
+    if (produto && isOpen) {
+      setNome(produto.nome || "");
+      setDescricao(produto.descricao || "");
+      setPreco(produto.preco !== undefined ? String(produto.preco).replace(".", ",") : "");
+      setEstoque(produto.estoque ?? 0);
+      setSubcategoria(produto.categoria_id ? CATEGORIA_NOME_POR_ID[produto.categoria_id] || "" : "");
+
+      const imagensOrdenadas = [...(produto.imagens_produto || [])].sort((a, b) => a.ordem - b.ordem);
+      const novasFotos: (string | null)[] = [null, null, null, null];
+      const novosIds: (number | null)[] = [null, null, null, null];
+      imagensOrdenadas.slice(0, 4).forEach((img, index) => {
+        novasFotos[index] = urlFoto(img.url_imagem);
+        novosIds[index] = img.id;
+      });
+      setFotos(novasFotos);
+      setImagensExistentesIds(novosIds);
+      setArquivos([null, null, null, null]);
+      setConfirmandoExclusao(false);
     }
-    if (isOpen) {
-      fetchCategorias();
-    }
-  }, [isOpen]);
+  }, [produto, isOpen]);
 
   const handleFotoChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,7 +98,8 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
     }
   };
 
-  const handleAdicionar = async () => {
+  const handleSalvar = async () => {
+    if (!produto) return;
     if (!nome || !preco) {
       toast.error("O nome e o preço são obrigatórios.");
       return;
@@ -63,34 +108,23 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
     try {
       setLoading(true);
 
-      if (!categoriaId) {
-        toast.error("Por favor, selecione uma categoria.");
-        setLoading(false);
-        return;
-      }
-
       const precoNumerico = parseFloat(preco.replace(",", "."));
 
-      // PAYLOAD CORRIGIDO PARA BATER COM O BACKEND
       const payload = {
         nome,
         descricao,
         preco: precoNumerico,
         estoque,
-        loja_id: lojaId, // Ajustado para loja_id (snake_case)
-        categoria_id: categoriaId,
+        categoria_id: CATEGORIA_ID_POR_NOME[subcategoria] || produto.categoria_id || 1,
       };
 
-      // Cria o produto primeiro
-      const produtoCriado = await api.post("/produtos", payload);
-      const produtoId = produtoCriado.data.id;
+      await api.patch(`/produtos/${produto.id}`, payload);
 
-      // Faz upload de cada foto selecionada e cria os registros de imagens_produto
-      const arquivosSelecionados = arquivos
+      const novosArquivos = arquivos
         .map((file, index) => ({ file, ordem: index }))
         .filter((item) => item.file !== null);
 
-      for (const item of arquivosSelecionados) {
+      for (const item of novosArquivos) {
         const formData = new FormData();
         formData.append("file", item.file as File);
 
@@ -99,36 +133,51 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
         });
 
         const urlImagem = uploadResponse.data.url_imagem;
+        const idExistente = imagensExistentesIds[item.ordem];
 
-        await api.post("/imagens-produto", {
-          produto_id: produtoId,
-          url_imagem: urlImagem,
-          ordem: item.ordem,
-        });
+        if (idExistente) {
+          await api.patch(`/imagens-produto/${idExistente}`, {
+            url_imagem: urlImagem,
+          });
+        } else {
+          await api.post("/imagens-produto", {
+            produto_id: produto.id,
+            url_imagem: urlImagem,
+            ordem: item.ordem,
+          });
+        }
       }
 
-      toast.success("Produto adicionado com sucesso!");
-      
-      // Limpeza dos estados
-      setNome("");
-      setDescricao("");
-      setPreco("");
-      setEstoque(13);
-      setSubcategoria("");
-      setFotos([null, null, null, null]);
-      setArquivos([null, null, null, null]);
-
-      onSuccess(); 
-      onClose(); 
+      toast.success("Produto atualizado com sucesso!");
+      onSuccess();
+      onClose();
     } catch (error: any) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Erro ao adicionar o produto.");
+      toast.error(error.response?.data?.message || "Erro ao atualizar o produto.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  const handleExcluir = async () => {
+    if (!produto) return;
+
+    try {
+      setLoading(true);
+      await api.delete(`/produtos/${produto.id}`);
+      toast.success("Produto excluído com sucesso!");
+      onSuccess();
+      onClose();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Erro ao excluir o produto.");
+    } finally {
+      setLoading(false);
+      setConfirmandoExclusao(false);
+    }
+  };
+
+  if (!isOpen || !produto) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -139,7 +188,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
         </button>
 
         <h2 className="text-center font-spartan font-normal text-[32px] leading-none text-black mt-1">
-          Adicionar Produto
+          Editar Produto
         </h2>
 
         <div
@@ -197,7 +246,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
           placeholder="Nome do produto"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-          className="w-full bg-white rounded-full px-5 py-3.5 text-gray-400 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40"
+          className="w-full bg-white rounded-full px-5 py-3.5 text-gray-700 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40"
         />
 
         <div className="relative">
@@ -211,24 +260,16 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
             <Image src="/images/Vector_148.png" alt="Abrir" width={12} height={12} className={`transition-transform duration-200 ${subcategoriaAberta ? "rotate-180" : ""}`} />
           </button>
           {subcategoriaAberta && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
-              {categoriasLista.length > 0 ? categoriasLista.map((cat) => (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg z-10 overflow-hidden">
+              {["Eletrônicos", "Roupas", "Alimentos", "Acessórios", "Outros"].map((cat) => (
                 <button
-                  key={cat.id}
-                  onClick={() => { 
-                    setSubcategoria(cat.nome); 
-                    setCategoriaId(cat.id);
-                    setSubcategoriaAberta(false); 
-                  }}
+                  key={cat}
+                  onClick={() => { setSubcategoria(cat); setSubcategoriaAberta(false); }}
                   className="w-full text-left px-5 py-2.5 font-spartan font-light text-[15px] text-gray-700 hover:bg-[#6A38F3]/10 transition"
                 >
-                  {cat.nome}
+                  {cat}
                 </button>
-              )) : (
-                <div className="w-full text-left px-5 py-2.5 font-spartan font-light text-[15px] text-gray-500">
-                  Nenhuma categoria encontrada
-                </div>
-              )}
+              ))}
             </div>
           )}
         </div>
@@ -238,7 +279,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
           value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           rows={4}
-          className="w-full bg-white rounded-2xl px-5 py-3.5 text-gray-400 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40 resize-none"
+          className="w-full bg-white rounded-2xl px-5 py-3.5 text-gray-700 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40 resize-none"
         />
 
         <input
@@ -246,7 +287,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
           placeholder="Preço do produto"
           value={preco}
           onChange={(e) => setPreco(e.target.value)}
-          className="w-full bg-white rounded-full px-5 py-3.5 text-gray-400 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40"
+          className="w-full bg-white rounded-full px-5 py-3.5 text-gray-700 font-spartan font-light text-[15px] outline-none focus:ring-2 focus:ring-[#6A38F3]/40"
         />
 
         <div className="flex items-center justify-center gap-6">
@@ -268,12 +309,44 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
         </div>
 
         <button
-          onClick={handleAdicionar}
+          onClick={handleSalvar}
           disabled={loading}
           className="w-full bg-[#6A38F3] hover:bg-[#5229d4] disabled:opacity-60 text-white font-spartan font-semibold text-[15px] rounded-full py-3 transition duration-200"
         >
-          {loading ? "Adicionando..." : "Adicionar"}
+          {loading ? "Salvando..." : "Salvar alterações"}
         </button>
+
+        {!confirmandoExclusao ? (
+          <button
+            onClick={() => setConfirmandoExclusao(true)}
+            disabled={loading}
+            className="w-full bg-transparent border-2 border-red-500 hover:bg-red-50 disabled:opacity-60 text-red-500 font-spartan font-semibold text-[15px] rounded-full py-3 transition duration-200"
+          >
+            Excluir produto
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2 border-2 border-red-500 rounded-2xl p-4 bg-red-50">
+            <p className="text-center text-red-600 font-spartan text-[14px]">
+              Tem certeza? Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmandoExclusao(false)}
+                disabled={loading}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 font-spartan text-[14px] rounded-full py-2.5 hover:bg-gray-50 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleExcluir}
+                disabled={loading}
+                className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white font-spartan text-[14px] rounded-full py-2.5 transition"
+              >
+                {loading ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
