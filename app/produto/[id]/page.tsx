@@ -86,11 +86,11 @@ const avaliacoesFallback = [
 ];
 
 const produtosMesmaLoja: ProdutoRelacionado[] = [
-  { id: 7, nome: "Brownie Trad.", preco: 3.8, disponivel: false, imagem: "/images/products/prod_brownie_trad.png" },
-  { id: 8, nome: "Brownie Doce L.", preco: 4.7, disponivel: true, imagem: "/images/products/prod_brownie_meio.png" },
-  { id: 9, nome: "Brownie Nozes", preco: 4.7, disponivel: true, imagem: "/images/products/prod_nozes.png" },
-  { id: 10, nome: "Brownie Cookies", preco: 4.7, disponivel: false, imagem: "/images/products/prod_brownie_trad.png" },
-  { id: 11, nome: "Brownie M&M", preco: 4.7, disponivel: true, imagem: "/images/products/Brownie-de-M&M's.png" },
+  { id: 7, nome: "Brownie Tradicional", preco: 3.8, disponivel: false, imagem: "/images/products/prod_brownie_trad.png" },
+  { id: 8, nome: "Banana", preco: 3.99, disponivel: true, imagem: "/images/products/prod_banana.png" },
+  { id: 9, nome: "Nozes", preco: 29.99, disponivel: true, imagem: "/images/products/prod_nozes.png" },
+  { id: 10, nome: "Limão Siciliano", preco: 17.99, disponivel: false, imagem: "/images/products/prod_limao.png" },
+  { id: 11, nome: "Blush", preco: 199.99, disponivel: true, imagem: "/images/products/prod_blush.png" },
 ];
 
 const imagensFallback = [
