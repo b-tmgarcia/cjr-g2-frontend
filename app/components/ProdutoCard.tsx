@@ -24,7 +24,7 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
         width: '190.24px', height: '190.24px',
         borderRadius: '12.81px', backgroundColor: 'white', overflow: 'hidden',
       }}>
-        <Image src={src} alt={nome} width={190} height={190}
+        <Image src={src} alt={nome} width={190} height={190} unoptimized
           style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
       </div>
 

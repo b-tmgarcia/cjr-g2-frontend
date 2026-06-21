@@ -7,6 +7,8 @@ import { League_Spartan } from "next/font/google";
 import { LojaAPI, ProdutoAPI, AvaliacaoLojaAPI, getLoja } from "../services/lojas";
 import { SecaoProdutos } from "./SecaoProdutos";
 import ModalAdicionarProduto from "../components/ModalAdicionarProduto";
+import ModalEditarProduto from "../components/ModalEditarProduto";
+import ModalEditarLoja from "../components/ModalEditarLoja";
 
 const spartan = League_Spartan({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"] });
 
@@ -14,6 +16,15 @@ const POR_PAGINA = 15;
 
 function fmt(v: number) {
   return `R$${v.toFixed(2).replace(".", ",")}`;
+}
+
+function urlImagemProduto(produto: ProdutoAPI): string {
+  const primeira = produto.imagens_produto?.[0]?.url_imagem;
+  if (!primeira) return "/images/imagem_referencia.png";
+  if (primeira.startsWith("http://") || primeira.startsWith("https://")) {
+    return primeira;
+  }
+  return `http://localhost:3001${primeira}`;
 }
 
 function calcMedia(avaliacoes: AvaliacaoLojaAPI[] | undefined): number {
@@ -46,16 +57,22 @@ function Estrelas({ valor, size = 20 }: { valor: number; size?: number }) {
   );
 }
 
-function CardProduto({ produto }: { produto: ProdutoAPI }) {
+function CardProduto({ produto, onClick }: { produto: ProdutoAPI; onClick?: () => void }) {
+  const disponivel = produto.estoque > 0;
+  const imagem = urlImagemProduto(produto);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 24, padding: 12, boxShadow: "0px 4px 12px rgba(0,0,0,0.03)", boxSizing: "border-box", width: "100%" }}>
+    <div
+      onClick={onClick}
+      style={{ display: "flex", flexDirection: "column", background: "#ffffff", borderRadius: 24, padding: 12, boxShadow: "0px 4px 12px rgba(0,0,0,0.03)", boxSizing: "border-box", width: "100%", cursor: onClick ? "pointer" : "default", transition: "transform 0.15s" }}
+    >
       <div style={{ width: "100%", height: 170, background: "#ffffff", borderRadius: 18, position: "relative", overflow: "hidden", marginBottom: 12 }}>
-        <Image src={produto.imagem || "/images/imagem_referencia.png"} alt={produto.nome} fill sizes="200px" style={{ objectFit: "contain", padding: 10 }} unoptimized />
+        <Image src={imagem} alt={produto.nome} fill sizes="200px" style={{ objectFit: "contain", padding: 10 }} unoptimized />
       </div>
       <span style={{ fontSize: 13, fontWeight: 700, color: "#111", lineHeight: 1.3 }}>{produto.nome}</span>
       <span style={{ fontSize: 13, fontWeight: 400, color: "#374151", marginTop: 2 }}>{fmt(produto.preco)}</span>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: 4, color: produto.disponivel ? "#6C3CF0" : "#EF4444" }}>
-        {produto.disponivel ? "Disponível" : "Indisponível"}
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: 4, color: disponivel ? "#6C3CF0" : "#EF4444" }}>
+        {disponivel ? "Disponível" : "Indisponível"}
       </span>
     </div>
   );
@@ -67,7 +84,7 @@ function HeroBanner({ loja, media, onEditLoja, onAddProduto }: { loja: LojaAPI; 
 
   return (
     <div style={{ position: "relative", width: "100%", height: 350, overflow: "hidden" }}>
-      <Image src={loja.banner || "/images/Rectangle_37.png"} alt={`Banner ${loja.nome}`} fill style={{ objectFit: "cover", objectPosition: "center 25%" }} priority unoptimized />
+      <Image src={loja.banner_url || "/images/Rectangle_37.png"} alt={`Banner ${loja.nome}`} fill style={{ objectFit: "cover", objectPosition: "center 25%" }} priority unoptimized />
       <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
       
       {/* Botões do Banner */}
@@ -147,16 +164,10 @@ function ReviewsSection({ avaliacoes, media, onAvaliar }: { avaliacoes: Avaliaca
   );
 }
 
-function GradeProdutos({ produtos, nomeLoja }: { produtos: ProdutoAPI[]; nomeLoja: string }) {
+function GradeProdutos({ produtos, nomeLoja, onEditarProduto }: { produtos: ProdutoAPI[]; nomeLoja: string; onEditarProduto: (produto: ProdutoAPI) => void }) {
   const [pagina, setPagina] = useState(1);
 
-  const listaSegura = produtos && produtos.length >= POR_PAGINA ? produtos : Array.from({ length: 35 }, (_, i) => ({
-    id: i + 100,
-    nome: `Produto Exemplo ${i + 1}`,
-    preco: 89.90 + (i * 5),
-    disponivel: i % 4 !== 0,
-    imagem: produtos?.[i % (produtos.length || 1)]?.imagem || "/images/imagem_referencia.png"
-  }));
+  const listaSegura = produtos;
 
   const totalPaginas = Math.ceil(listaSegura.length / POR_PAGINA);
   const inicio = (pagina - 1) * POR_PAGINA;
@@ -176,39 +187,51 @@ function GradeProdutos({ produtos, nomeLoja }: { produtos: ProdutoAPI[]; nomeLoj
         Produtos <span style={{ fontSize: 14, fontWeight: 400, color: "#7F7F7F" }}>de {nomeLoja.toLowerCase()}</span>
       </h2>
       
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 20 }}>
-        {itensExibidos.map((p) => <CardProduto key={p.id} produto={p} />)}
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, marginTop: 60 }}>
-        <button onClick={() => irPara(pagina - 1)} style={{ background: "none", border: "none", cursor: pagina === 1 ? "default" : "pointer", opacity: pagina === 1 ? 0.25 : 1, color: "#000" }}>
-            <svg width="12" height="20" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
-
-        <div style={{ display: "flex", gap: 15 }}>
-          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
-            <button 
-              key={n} 
-              onClick={() => irPara(n)}
-              style={{ 
-                background: "none", 
-                border: "none", 
-                cursor: "pointer",
-                fontSize: 20,
-                fontWeight: pagina === n ? "700" : "400",
-                color: pagina === n ? "#000" : "#A3A3A3",
-                fontFamily: "inherit"
-              }}
-            >
-              {n}
-            </button>
+      {listaSegura.length === 0 ? (
+        <p style={{ color: "#9CA3AF", fontStyle: "italic" }}>Nenhum produto cadastrado ainda.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 20 }}>
+          {itensExibidos.map((p) => (
+            <CardProduto
+              key={p.id}
+              produto={p}
+              onClick={() => onEditarProduto(p)}
+            />
           ))}
         </div>
+      )}
 
-        <button onClick={() => irPara(pagina + 1)} style={{ background: "none", border: "none", cursor: pagina === totalPaginas ? "default" : "pointer", opacity: pagina === totalPaginas ? 0.25 : 1, color: "#000" }}>
-            <svg width="12" height="20" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>
+      {totalPaginas > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, marginTop: 60 }}>
+          <button onClick={() => irPara(pagina - 1)} style={{ background: "none", border: "none", cursor: pagina === 1 ? "default" : "pointer", opacity: pagina === 1 ? 0.25 : 1, color: "#000" }}>
+              <svg width="12" height="20" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+
+          <div style={{ display: "flex", gap: 15 }}>
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
+              <button 
+                key={n} 
+                onClick={() => irPara(n)}
+                style={{ 
+                  background: "none", 
+                  border: "none", 
+                  cursor: "pointer",
+                  fontSize: 20,
+                  fontWeight: pagina === n ? "700" : "400",
+                  color: pagina === n ? "#000" : "#A3A3A3",
+                  fontFamily: "inherit"
+                }}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <button onClick={() => irPara(pagina + 1)} style={{ background: "none", border: "none", cursor: pagina === totalPaginas ? "default" : "pointer", opacity: pagina === totalPaginas ? 0.25 : 1, color: "#000" }}>
+              <svg width="12" height="20" viewBox="0 0 8 14" fill="none"><path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
       </div>
+        )}
     </section>
   );
 }
@@ -221,6 +244,7 @@ export default function Loja({ lojaId }: { lojaId: number }) {
   const [isModalEditLojaOpen, setIsModalEditLojaOpen] = useState(false);
   const [isModalAddProdutoOpen, setIsModalAddProdutoOpen] = useState(false);
   const [isModalAvaliarOpen, setIsModalAvaliarOpen] = useState(false);
+  const [produtoEmEdicao, setProdutoEmEdicao] = useState<ProdutoAPI | null>(null);
 
   const carregarLoja = async () => {
     try {
@@ -261,10 +285,10 @@ export default function Loja({ lojaId }: { lojaId: number }) {
 
   // Formata os produtos da API para o formato que o componente da sua colega exige
   const produtosFormatados = listaProdutos.slice(0, 10).map((p) => ({
-    src: p.imagem || "/images/imagem_referencia.png",
+    src: urlImagemProduto(p),
     nome: p.nome,
     preco: fmt(p.preco),
-    disponivel: p.disponivel,
+    disponivel: p.estoque > 0,
   }));
 
   return (
@@ -293,18 +317,22 @@ export default function Loja({ lojaId }: { lojaId: number }) {
         onAvaliar={() => setIsModalAvaliarOpen(true)} 
       />
       
-      <GradeProdutos produtos={listaProdutos} nomeLoja={loja.nome} />
+      <GradeProdutos produtos={listaProdutos} nomeLoja={loja.nome} onEditarProduto={(p) => setProdutoEmEdicao(p)} />
 
-      {/* RENDERIZAÇÃO DOS MODAIS (Substitua pelos componentes reais quando prontos) */}
-      {isModalEditLojaOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "#fff", padding: 40, borderRadius: 20 }}>
-            <h2>Modal Editar Loja (Em construção)</h2>
-            <button onClick={() => setIsModalEditLojaOpen(false)}>Fechar</button>
-          </div>
-          {/* <ModalEditarLoja onClose={() => setIsModalEditLojaOpen(false)} loja={loja} /> */}
-        </div>
-      )}
+      {/* MODAL EDITAR LOJA INTEGRADO */}
+      <ModalEditarLoja
+        isOpen={isModalEditLojaOpen}
+        onClose={() => setIsModalEditLojaOpen(false)}
+        loja={{
+          id: loja.id,
+          nome: loja.nome,
+          descricao: loja.descricao,
+          logo_url: loja.logo_url,
+          banner_url: loja.banner_url,
+          sticker_url: loja.sticker_url,
+        }}
+        onSuccess={carregarLoja}
+      />
 
      {/* MODAL ADICIONAR PRODUTO INTEGRADO */}
       <ModalAdicionarProduto 
@@ -312,6 +340,14 @@ export default function Loja({ lojaId }: { lojaId: number }) {
         onClose={() => setIsModalAddProdutoOpen(false)} 
         lojaId={loja.id}
         onSuccess={carregarLoja} 
+      />
+
+      {/* MODAL EDITAR PRODUTO INTEGRADO */}
+      <ModalEditarProduto
+        isOpen={produtoEmEdicao !== null}
+        onClose={() => setProdutoEmEdicao(null)}
+        produto={produtoEmEdicao}
+        onSuccess={carregarLoja}
       />
 
       {isModalAvaliarOpen && (
