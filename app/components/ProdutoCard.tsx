@@ -1,8 +1,9 @@
 'use client';
-
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export type Produto = {
+  id?: number;
   src: string;
   nome: string;
   preco: string;
@@ -10,15 +11,20 @@ export type Produto = {
   unidade?: string;
 };
 
-export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) {
+export function ProdutoCard({ id, src, nome, preco, disponivel, unidade }: Produto) {
+  const router = useRouter();
+
   return (
-    <div style={{
-      position: 'relative',
-      minWidth: '228.68px', maxWidth: '228.68px', flexShrink: 0,
-      width: '228.68px', height: '310px',
-      borderRadius: '35px', backgroundColor: 'white',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
-    }}>
+    <div
+      onClick={() => id && router.push(`/produto/${id}`)}
+      style={{
+        position: 'relative',
+        minWidth: '228.68px', maxWidth: '228.68px', flexShrink: 0,
+        width: '228.68px', height: '310px',
+        borderRadius: '35px', backgroundColor: 'white',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+        cursor: id ? 'pointer' : 'default',
+      }}>
       <div style={{
         position: 'absolute', top: '7px', left: '19px',
         width: '190.24px', height: '190.24px',
@@ -27,7 +33,6 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
         <Image src={src} alt={nome} width={190} height={190} unoptimized
           style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
       </div>
-
       <p style={{
         position: 'absolute', top: '187px', left: '22px',
         width: '190px', height: '35px',
@@ -36,7 +41,6 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
       }}>
         {nome}
       </p>
-
       <p style={{
         position: 'absolute', top: '220px', left: '22.09px',
         width: '83px', height: '19px',
@@ -49,7 +53,6 @@ export function ProdutoCard({ src, nome, preco, disponivel, unidade }: Produto) 
           </span>
         )}
       </p>
-
       <p style={{
         position: 'absolute', top: '247px', left: '22.09px',
         width: '82.85px', height: '13px',
