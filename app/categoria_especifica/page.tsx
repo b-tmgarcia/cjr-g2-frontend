@@ -8,6 +8,7 @@ import { CiSearch } from 'react-icons/ci';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
 import { ProdutoCard } from '@/app/components/ProdutoCard';
+import { SearchBar } from '@/app/components/SearchBar';
 import api from '@/app/services/api';
 
 // Tipos substituindo os imports quebrados
@@ -78,6 +79,7 @@ export default function CategoriaEspecificaPage() {
   const [produtosExibidos, setProdutosExibidos] = useState<Produto[]>([]);
   const [maisPopulares, setMaisPopulares] = useState<Produto[]>([]);
   const [recemAdicionados, setRecemAdicionados] = useState<Produto[]>([]);
+  const [todosProdutos, setTodosProdutos] = useState<Produto[]>([]);
   const [lojas, setLojas] = useState<Loja[]>([]);
 
   // Carrega infos da categoria, destaques e lojas
@@ -148,7 +150,9 @@ export default function CategoriaEspecificaPage() {
     async function carregarProdutosDaPagina() {
       const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
       if (useMocks) {
-        setProdutosExibidos(mockProdutos.map((p, i) => ({ ...p, id: i + 1 })));
+        const mocked = mockProdutos.map((p, i) => ({ ...p, id: i + 1 }));
+        setProdutosExibidos(mocked);
+        setTodosProdutos(mocked);
         return;
       }
 
@@ -168,6 +172,7 @@ export default function CategoriaEspecificaPage() {
           const inicio = (pagina - 1) * itensPorPagina;
           const fim = inicio + itensPorPagina;
           setProdutosExibidos(produtosFormatados.slice(inicio, fim));
+          setTodosProdutos(produtosFormatados);
         }
       } catch (error) {
         console.error(`Erro ao carregar produtos da página ${pagina}:`, error);
@@ -256,16 +261,7 @@ export default function CategoriaEspecificaPage() {
         {/* Campo de Busca */}
         <section style={{ paddingTop: '20px', paddingLeft: '90px', paddingRight: '65px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.75rem', marginLeft: '615px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              backgroundColor: 'white', borderRadius: '9999px',
-              padding: '0.65rem 1.25rem', width: '603px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            }}>
-              <input type="text" placeholder="Procurar por..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#6A38F3', fontSize: '1rem' }} />
-              <CiSearch style={{ color: '#6A38F3', marginLeft: '0.5rem', fontSize: '1.2rem' }} />
-            </div>
+            <SearchBar produtos={todosProdutos} />
           </div>
         </section>
 

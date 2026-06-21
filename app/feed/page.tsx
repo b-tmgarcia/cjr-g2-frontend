@@ -12,6 +12,7 @@ import { MdOutlineComputer } from 'react-icons/md';
 import { IoGameControllerOutline } from 'react-icons/io5';
 import { TbHorseToy } from 'react-icons/tb';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
+import { SearchBar } from '@/app/components/SearchBar';
 import api from '@/app/services/api';
 
 const mockCategorias: { label: string; icon: React.ReactNode }[] = [
@@ -79,6 +80,7 @@ export default function FeedPage() {
   const [produtosMaisBaratos, setProdutosMaisBaratos] = useState<any[]>([]);
   const [produtosModa, setProdutosModa] = useState<any[]>([]);
   const [produtosRecentementeAdicionados, setProdutosRecentementeAdicionados] = useState<any[]>([]);
+  const [todosProdutos, setTodosProdutos] = useState<any[]>([]);
   const [lojas, setLojas] = useState<any[]>([]);
 
   useEffect(() => {
@@ -91,6 +93,12 @@ export default function FeedPage() {
       setProdutosMaisBaratos(mockProdutosMaisBaratos.map((p, i) => ({ ...p, id: i + 6 })));
       setProdutosModa(mockProdutosModa.map((p, i) => ({ ...p, id: i + 11 })));
       setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados.map((p, i) => ({ ...p, id: i + 16 })));
+      setTodosProdutos([
+        ...mockProdutosMelhoresAvaliados.map((p, i) => ({ ...p, id: i + 1 })),
+        ...mockProdutosMaisBaratos.map((p, i) => ({ ...p, id: i + 6 })),
+        ...mockProdutosModa.map((p, i) => ({ ...p, id: i + 11 })),
+        ...mockProdutosRecentementeAdicionados.map((p, i) => ({ ...p, id: i + 16 }))
+      ]);
       setLojas(mockLojas.map((l, i) => ({ ...l, id: i + 1 })));
     } else {
       async function fetchDadosReais() {
@@ -124,11 +132,13 @@ export default function FeedPage() {
             setProdutosMaisBaratos(produtosFormatados.slice(5, 10));
             setProdutosModa(produtosFormatados.slice(10, 15));
             setProdutosRecentementeAdicionados(produtosFormatados.slice(-5));
+            setTodosProdutos(produtosFormatados);
           } else {
             setProdutosMelhoresAvaliados([]);
             setProdutosMaisBaratos([]);
             setProdutosModa([]);
             setProdutosRecentementeAdicionados([]);
+            setTodosProdutos([]);
           }
 
           if (lojasRes.status === 'fulfilled' && lojasRes.value.data) {
@@ -242,16 +252,7 @@ export default function FeedPage() {
 
           {/* Busca */}
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.75rem', marginLeft: '615px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              backgroundColor: 'white', borderRadius: '9999px',
-              padding: '0.65rem 1.25rem', width: '603px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            }}>
-              <input type="text" placeholder="Procurar por..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#6A38F3', fontSize: '1rem' }} />
-              <CiSearch style={{ color: '#6A38F3', marginLeft: '0.5rem', fontSize: '1.2rem' }} />
-            </div>
+            <SearchBar produtos={todosProdutos} />
           </div>
 
           {/* Categorias */}
