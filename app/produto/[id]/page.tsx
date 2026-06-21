@@ -172,7 +172,7 @@ export default function ProdutoPage() {
         nome: av.usuario?.nome ?? "Usuário",
         estrelas: av.estrelas,
         texto: av.texto,
-        avatar: av.usuario?.url_avatar ?? "/images/Ellipse_21.png",
+        avatar: av.usuario?.url_avatar ?? "/images/selena.png",
         isOwner: !!(usuario && av.usuario_id != null && av.usuario_id === usuario.id),
       }))
     : avaliacoesFallback.map((av) => ({
@@ -299,7 +299,8 @@ export default function ProdutoPage() {
             </p>
 
             <div>
-              <h2 className="text-lg font-semibold mb-1">Descrição</h2>
+             {/* CORREÇÃO: text-gray-900 garante o rótulo "Descrição" preto */}
+              <h2 className="text-lg font-semibold mb-1 text-gray-900">Descrição</h2>
               <div className="w-8 h-[2px] rounded-full mb-3" style={{ background: "#D4B896" }} />
               <p className="text-[13px] text-gray-600 whitespace-pre-line leading-relaxed max-h-52 overflow-y-auto pr-1">
                 {produto.descricao}
