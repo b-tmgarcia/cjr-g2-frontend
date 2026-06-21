@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
+@media (prefers-color-scheme: dark) {
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
 }
 
 @theme inline {
@@ -12,12 +14,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Bloco de dark mode removido: o app usa tema claro fixo,
+   então o texto deve permanecer escuro mesmo com o SO no modo escuro. */
 
 body {
   background: var(--background);
