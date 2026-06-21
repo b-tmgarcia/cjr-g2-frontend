@@ -1,14 +1,7 @@
-// fazer uma merge da dev na minha branch
-// criar um card de produtos (.tsx)
-// uma de sessão produtos (barra de rolagem) 
-// import sessao de produtos dentro da page.tsx
-// sessao de produtos tb tem o import da card de produtos
-// no backend o Jose Carlos usa npm run start:dev, mas no frontend usa npm run dev
-// TC New Request http:/localhost:3001/user JSON Content {"email": "john@example.com", "senha": "123456"} 
-
 'use client';
 
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { LuLogOut } from 'react-icons/lu';
 import { IoPersonSharp } from 'react-icons/io5';
 import { CiSearch, CiShoppingBasket } from 'react-icons/ci';
@@ -19,8 +12,9 @@ import { MdOutlineComputer } from 'react-icons/md';
 import { IoGameControllerOutline } from 'react-icons/io5';
 import { TbHorseToy } from 'react-icons/tb';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
+import api from '@/app/services/api';
 
-const categorias: { label: string; icon: React.ReactNode }[] = [
+const mockCategorias: { label: string; icon: React.ReactNode }[] = [
   { label: 'Mercado',     icon: <CiShoppingBasket size={28} /> },
   { label: 'Farmácia',    icon: <BsCapsulePill size={24} /> },
   { label: 'Beleza',      icon: <GiLipstick size={24} /> },
@@ -31,7 +25,7 @@ const categorias: { label: string; icon: React.ReactNode }[] = [
   { label: 'Casa',        icon: <PiHouseLight size={26} /> },
 ];
 
-const produtosMelhoresAvaliados = [
+const mockProdutosMelhoresAvaliados = [
   { src: '/images/prod_brownie_meio.png', nome: 'Brownie Meio A.',  preco: 'R$4,70',  disponivel: true  },
   { src: '/images/prod_brownie_trad.png', nome: 'Brownie Trad.',    preco: 'R$3,80',  disponivel: false },
   { src: '/images/prod_nozes.png',        nome: 'Nozes',            preco: 'R$29,99', disponivel: true,  unidade: '/kg' },
@@ -39,7 +33,7 @@ const produtosMelhoresAvaliados = [
   { src: '/images/prod_limao.png',        nome: 'Limão Siciliano',  preco: 'R$17,99', disponivel: false, unidade: '/kg' },
 ];
 
-const produtosMaisBaratos = [
+const mockProdutosMaisBaratos = [
   { src: '/images/prod_limpador_facial.png', nome: 'Limpador Facial', preco: 'R$74,99',  disponivel: true  },
   { src: '/images/prod_blush.png',           nome: 'Blush',           preco: 'R$199,99', disponivel: false },
   { src: '/images/prod_serum.png',           nome: 'Sérum Facial',    preco: 'R$99,90',  disponivel: true  },
@@ -47,7 +41,7 @@ const produtosMaisBaratos = [
   { src: '/images/prod_body_splash.png',     nome: 'Body Splash',     preco: 'R$179,99', disponivel: false },
 ];
 
-const produtosModa = [
+const mockProdutosModa = [
   { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
   { src: '/images/prod_new_balance.png',   nome: 'New Balance', preco: 'R$399,99', disponivel: false },
   { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
@@ -55,7 +49,7 @@ const produtosModa = [
   { src: '/images/prod_saia.png',          nome: 'Saia Jeans',  preco: 'R$159,99', disponivel: false },
 ];
 
-const produtosRecentementeAdicionados = [
+const mockProdutosRecentementeAdicionados = [
   { src: '/images/prod_bolsa.png',         nome: 'Bolsa',       preco: 'R$349,90', disponivel: true  },
   { src: '/images/prod_blush.png',         nome: 'Blush',       preco: 'R$159,99', disponivel: false },
   { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
@@ -63,7 +57,7 @@ const produtosRecentementeAdicionados = [
   { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
 ];
 
-const lojas = [
+const mockLojas = [
   { src: '/images/lojas_cjr.png',         nome: 'CJR',           categoria: 'mercado'      },
   { src: '/images/lojas_rare_beauty.png',  nome: 'Rare Beauty',   categoria: 'beleza'       },
   { src: '/images/lojas_the_croc.png',    nome: 'The Croc Brew', categoria: 'mercado'      },
@@ -74,8 +68,90 @@ const lojas = [
   { src: '/images/lojas_abtec.png',        nome: 'abtec',         categoria: 'eletrônicos'  },
 ];
 
+import { useRouter } from 'next/navigation';
+
 // ─── Página ───────────────────────────────────────────────────────────────────
 export default function FeedPage() {
+  const router = useRouter();
+  const [isLogged, setIsLogged] = useState(false);
+  const [categorias, setCategorias] = useState<{ label: string; icon: React.ReactNode }[]>([]);
+  const [produtosMelhoresAvaliados, setProdutosMelhoresAvaliados] = useState<any[]>([]);
+  const [produtosMaisBaratos, setProdutosMaisBaratos] = useState<any[]>([]);
+  const [produtosModa, setProdutosModa] = useState<any[]>([]);
+  const [produtosRecentementeAdicionados, setProdutosRecentementeAdicionados] = useState<any[]>([]);
+  const [lojas, setLojas] = useState<any[]>([]);
+
+  useEffect(() => {
+    setIsLogged(!!localStorage.getItem('token'));
+    
+    const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+    if (useMocks) {
+      setCategorias(mockCategorias);
+      setProdutosMelhoresAvaliados(mockProdutosMelhoresAvaliados);
+      setProdutosMaisBaratos(mockProdutosMaisBaratos);
+      setProdutosModa(mockProdutosModa);
+      setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados);
+      setLojas(mockLojas);
+    } else {
+      async function fetchDadosReais() {
+        try {
+          const [catRes, prodRes, lojasRes] = await Promise.allSettled([
+            api.get('/categorias'),
+            api.get('/produtos'),
+            api.get('/lojas')
+          ]);
+
+          if (catRes.status === 'fulfilled' && catRes.value.data) {
+            setCategorias(catRes.value.data.map((c: any) => ({
+              label: c.nome,
+              icon: <CiShoppingBasket size={28} /> // fallback icon for dynamic categories
+            })));
+          } else {
+            setCategorias([]);
+          }
+
+          if (prodRes.status === 'fulfilled' && prodRes.value.data) {
+            const produtosFormatados = prodRes.value.data.map((p: any) => ({
+              src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
+              nome: p.nome || 'Produto',
+              preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
+              disponivel: p.estoque > 0,
+            }));
+            
+            // Distribute real products across the 4 sections
+            setProdutosMelhoresAvaliados(produtosFormatados.slice(0, 5));
+            setProdutosMaisBaratos(produtosFormatados.slice(5, 10));
+            setProdutosModa(produtosFormatados.slice(10, 15));
+            setProdutosRecentementeAdicionados(produtosFormatados.slice(-5));
+          } else {
+            setProdutosMelhoresAvaliados([]);
+            setProdutosMaisBaratos([]);
+            setProdutosModa([]);
+            setProdutosRecentementeAdicionados([]);
+          }
+
+          if (lojasRes.status === 'fulfilled' && lojasRes.value.data) {
+            setLojas(lojasRes.value.data.map((l: any) => ({
+              src: l.logo_url || '/images/lojas_cjr.png',
+              nome: l.nome,
+              categoria: l.categoria?.nome || 'Diversos'
+            })));
+          } else {
+            setLojas([]);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar dados reais do feed", error);
+        }
+      }
+      fetchDadosReais();
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#000', overflowX: 'hidden' }}>
 
@@ -100,12 +176,31 @@ export default function FeedPage() {
               style={{ objectFit: 'contain', objectPosition: 'left' }} priority />
           </div>
           <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            <button aria-label="Perfil" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IoPersonSharp style={{ width: '35px', height: '35px' }} />
-            </button>
-            <button aria-label="Sair" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LuLogOut style={{ width: '28.75px', height: '27.5px' }} />
-            </button>
+            {isLogged ? (
+              <>
+                <button aria-label="Perfil" onClick={() => router.push('/preview/perfil')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IoPersonSharp style={{ width: '35px', height: '35px' }} />
+                </button>
+                <button aria-label="Sair" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LuLogOut style={{ width: '28.75px', height: '27.5px' }} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => router.push('/login')} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', fontFamily: 'League Spartan, sans-serif', fontWeight: 600, fontSize: '17.58px', lineHeight: '100%', textAlign: 'center' }}
+                >
+                  LOGIN
+                </button>
+                <button 
+                  onClick={() => router.push('/cadastro')} 
+                  style={{ background: '#6A38F3', border: 'none', cursor: 'pointer', color: 'white', fontFamily: 'League Spartan, sans-serif', fontWeight: 600, fontSize: '17.58px', lineHeight: '100%', textAlign: 'center', borderRadius: '52.64px', width: '166px', height: '29.09px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  CADASTRE-SE
+                </button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -171,8 +266,8 @@ export default function FeedPage() {
               display: 'flex', gap: '18px', overflowX: 'auto',
               paddingTop: '20px', scrollbarWidth: 'none', boxSizing: 'border-box',
             }}>
-              {categorias.map((cat) => (
-                <div key={cat.label} style={{
+              {categorias.map((cat, idx) => (
+                <div key={idx} style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', gap: '0.4rem', cursor: 'pointer',
                   minWidth: '1px', width: '130px', height: '130px', flexShrink: 0,
@@ -223,8 +318,8 @@ export default function FeedPage() {
             height: '254px', paddingTop: '27px', paddingBottom: '27px',
             scrollbarWidth: 'none', boxSizing: 'border-box',
           }}>
-            {lojas.map((loja) => (
-              <div key={loja.nome} style={{
+            {lojas.map((loja, idx) => (
+              <div key={idx} style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 gap: '0.4rem', cursor: 'pointer',
                 minWidth: '161px', width: '161px', height: '199px', flexShrink: 0,
