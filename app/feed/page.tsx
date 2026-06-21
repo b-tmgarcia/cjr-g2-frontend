@@ -180,7 +180,7 @@ export default function FeedPage() {
           <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {isLogged ? (
               <>
-                <button aria-label="Perfil" onClick={() => router.push('/preview/perfil')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button aria-label="Perfil" onClick={() => router.push('/preview/profile/1')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <IoPersonSharp style={{ width: '35px', height: '35px' }} />
                 </button>
                 <button aria-label="Sair" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
