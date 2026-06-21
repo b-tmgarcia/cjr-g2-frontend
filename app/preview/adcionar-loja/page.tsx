@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ModalAdcionarLoja from "@/app/components/ModalAdcionarLoja";
 
 export default function PreviewAdcionarLoja() {
-  const [aberto, setAberto] = useState(true);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
-      <ModalAdcionarLoja isOpen={aberto} onClose={() => setAberto(false)} />
+      <ModalAdcionarLoja isOpen={true} onClose={() => router.push("/preview/tela-de-loja")} />
     </div>
   );
 }
