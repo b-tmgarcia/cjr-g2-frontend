@@ -8,8 +8,8 @@ import api from "../services/api";
 interface ModalAdicionarProdutoProps {
   isOpen: boolean;
   onClose: () => void;
-  lojaId: number;
-  onSuccess: () => void;
+  lojaId?: number;
+  onSuccess?: () => void;
 }
 
 export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSuccess }: ModalAdicionarProdutoProps) {
@@ -98,7 +98,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
           headers: { "Content-Type": "multipart/form-data" },
         });
 
-        const urlImagem = uploadResponse.data.url_imagem;
+        const urlImagem = uploadResponse.data.url;
 
         await api.post("/imagens-produto", {
           produto_id: produtoId,
@@ -118,7 +118,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
       setFotos([null, null, null, null]);
       setArquivos([null, null, null, null]);
 
-      onSuccess(); 
+      if (onSuccess) onSuccess(); 
       onClose(); 
     } catch (error: any) {
       console.error(error);

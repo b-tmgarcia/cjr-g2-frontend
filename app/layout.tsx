@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: "Stock.IO App",
 };
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${leagueSpartan.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <ToastContainer position="bottom-right" theme="dark" />
+      </body>
     </html>
   );
 }

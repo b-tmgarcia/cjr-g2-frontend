@@ -25,6 +25,30 @@ export type Loja = {
   categoria: string;
 };
 
+const mockProdutos = [
+  { src: '/images/prod_limpador_facial.png', nome: 'Limpador Facial', preco: 'R$74,99',  disponivel: true  },
+  { src: '/images/prod_blush.png',           nome: 'Blush',           preco: 'R$199,99', disponivel: false },
+  { src: '/images/prod_serum.png',           nome: 'Sérum Facial',    preco: 'R$99,90',  disponivel: true  },
+  { src: '/images/prod_iluminador.png',      nome: 'Iluminador',      preco: 'R$249,90', disponivel: true  },
+  { src: '/images/prod_body_splash.png',     nome: 'Body Splash',     preco: 'R$179,99', disponivel: false },
+  { src: '/images/prod_saia.png',          nome: 'Saia',        preco: 'R$75,99',  disponivel: true  },
+  { src: '/images/prod_new_balance.png',   nome: 'New Balance', preco: 'R$399,99', disponivel: false },
+  { src: '/images/prod_bota.png',          nome: 'Bota',        preco: 'R$115,90', disponivel: true  },
+  { src: '/images/prod_bolsa.png',         nome: 'Bolsa',       preco: 'R$349,90', disponivel: true  },
+  { src: '/images/prod_saia.png',          nome: 'Saia Jeans',  preco: 'R$159,99', disponivel: false },
+];
+
+const mockLojas = [
+  { src: '/images/lojas_cjr.png',         nome: 'CJR',           categoria: 'mercado'      },
+  { src: '/images/lojas_rare_beauty.png',  nome: 'Rare Beauty',   categoria: 'beleza'       },
+  { src: '/images/lojas_the_croc.png',    nome: 'The Croc Brew', categoria: 'mercado'      },
+  { src: '/images/lojas_mini_reno.png',    nome: 'Mini Reno',     categoria: 'casa'         },
+  { src: '/images/lojas_amoca.png',       nome: 'amoca',         categoria: 'moda'         },
+  { src: '/images/lojas_repliit.png',      nome: 'Repiit',        categoria: 'eletrônicos'  },
+  { src: '/images/lojas_electree.png',     nome: 'electree',      categoria: 'eletrônicos'  },
+  { src: '/images/lojas_abtec.png',        nome: 'abtec',         categoria: 'eletrônicos'  },
+];
+
 export default function CategoriaEspecificaPage() {
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState('');
@@ -43,6 +67,17 @@ export default function CategoriaEspecificaPage() {
   // Carrega infos da categoria, destaques e lojas
   useEffect(() => {
     async function carregarDadosIniciais() {
+      const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+
+      if (useMocks) {
+        setNomeCategoria('O universo da tecnologia (Mock)');
+        setPilulasCategorias(['Smartphones', 'Notebooks', 'Fones', 'Periféricos']);
+        setMaisPopulares(mockProdutos.slice(0, 5));
+        setRecemAdicionados(mockProdutos.slice(-5));
+        setLojas(mockLojas);
+        return;
+      }
+
       try {
         const [catRes, prodRes, lojasRes] = await Promise.allSettled([
           api.get('/categorias/1'), // ID fixo como exemplo
@@ -93,6 +128,12 @@ export default function CategoriaEspecificaPage() {
   // Carrega produtos da grid paginada
   useEffect(() => {
     async function carregarProdutosDaPagina() {
+      const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+      if (useMocks) {
+        setProdutosExibidos(mockProdutos);
+        return;
+      }
+
       try {
         // Busca todos e divide por paginas no front (15 por pagina)
         const response = await api.get('/produtos');
@@ -153,7 +194,7 @@ export default function CategoriaEspecificaPage() {
             width: '720px', height: '142px', textAlign: 'right',
           }}>
             <h1 style={{ color: 'white', fontWeight: 1100, fontSize: '3.35rem', lineHeight: 1.0, margin: 0 }}>
-              <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: 700 }}>{nomeCategoria}</span>
+              <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: 700 }}>O universo da tecnologia</span>
               <span style={{ display: 'block', fontWeight: 600 }}>em um só lugar</span>
             </h1>
           </div>

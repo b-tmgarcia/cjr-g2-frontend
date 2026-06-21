@@ -64,7 +64,7 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
         return;
       }
 
-      const decoded = jwtDecode<{ userId: number }>(token);
+      const decoded = jwtDecode<{ sub: number }>(token);
       
       const urls: (string | undefined)[] = [undefined, undefined, undefined];
       
@@ -80,7 +80,7 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
       }
 
       const novaLoja = {
-        usuario_id: decoded.userId,
+        usuario_id: decoded.sub,
         nome: nome,
         categoria_id: categoriaId,
         logo_url: urls[1],
@@ -92,9 +92,10 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
       
       alert("Loja criada com sucesso!");
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Ocorreu um erro ao criar a loja.");
+      const backendError = error.response?.data?.message || error.message || "Erro desconhecido";
+      alert("Ocorreu um erro ao criar a loja: " + JSON.stringify(backendError));
     }
   };
 
