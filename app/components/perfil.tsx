@@ -3,29 +3,33 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { jwtDecode } from "jwt-decode";
 import Navbar from "./navbar";
 import ModalEditarPerfil from "./ModalEditarPerfil";
-import { getUser } from "../services/users"; // Removemos o updateUser daqui
+import { getUser } from "../services/users";
 
-// Alterado 'name' para 'nome' para bater com o schema.prisma
 interface UsuarioPerfil {
   id: number;
-  nome: string; 
+  nome: string;
   username: string;
   email: string;
   avatar?: string;
 }
 
-export default function Perfil({ userId }: { userId: number }) {
+interface JwtPayload {
+  userId: number;
+}
+
+export default function Perfil() {  // <-- sem props
   const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioPerfil | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
 
-  const carregarUsuario = async () => {
+  const carregarUsuario = async (id: number) => {
     try {
-      const data = await getUser(userId);
+      const data = await getUser(id);
       setUsuario(data);
     } catch (err) {
       console.error("Erro ao buscar usuário:", err);
@@ -36,10 +40,14 @@ export default function Perfil({ userId }: { userId: number }) {
   };
 
   useEffect(() => {
-    carregarUsuario();
-  }, [userId]);
-
-  // A FUNÇÃO handleSalvar FOI APAGADA DAQUI! O Modal faz isso agora.
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    const { userId } = jwtDecode<JwtPayload>(token);
+    carregarUsuario(userId);
+  }, []);
 
   if (loading) {
     return (
@@ -105,17 +113,20 @@ export default function Perfil({ userId }: { userId: number }) {
         </button>
       </div>
 
-      {/* Trocamos onSave por onSuccess */}
-      <ModalEditarPerfil
-        isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
-        onSuccess={carregarUsuario} 
-        nomeAtual={usuario.nome}
-        usernameAtual={usuario.username}
-        emailAtual={usuario.email}
-        fotoAtual={usuario.avatar || ""}
-        userId={userId}
-      />
+    <ModalEditarPerfil
+  isOpen={modalAberto}
+  onClose={() => setModalAberto(false)}
+  onSuccess={() => {
+    const token = localStorage.getItem("token")!;
+    const { userId } = jwtDecode<JwtPayload>(token);
+    carregarUsuario(userId);
+  }}
+  nomeAtual={usuario.nome}
+  usernameAtual={usuario.username}
+  emailAtual={usuario.email}
+  fotoAtual={usuario.avatar || ""}
+  userId={usuario.id}
+/>
     </main>
   );
 }
