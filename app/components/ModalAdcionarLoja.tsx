@@ -78,24 +78,25 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
           urls[i] = response.data.url_imagem;
         }
       }
+const novaLoja: any = {
+  usuario_id: decoded.sub,
+  nome: nome,
+  categoria_id: categoriaId,
+};
+if (urls[1]) novaLoja.logo_url = urls[1];
+if (urls[2]) novaLoja.banner_url = urls[2];
+if (urls[0]) novaLoja.sticker_url = urls[0];
 
-      const novaLoja = {
-        usuario_id: decoded.sub,
-        nome: nome,
-        categoria_id: categoriaId,
-        logo_url: urls[1],
-        banner_url: urls[2],
-        sticker_url: urls[0],
-      };
+await api.post('/lojas', novaLoja);
 
       await api.post('/lojas', novaLoja);
       
       alert("Loja criada com sucesso!");
       onClose();
-    } catch (error: any) {
-      console.error(error);
-      const backendError = error.response?.data?.message || error.message || "Erro desconhecido";
-      alert("Ocorreu um erro ao criar a loja: " + JSON.stringify(backendError));
+  } catch (error: any) {
+      console.log("Erro completo do backend:", error.response?.data);
+      const mensagemErro = error.response?.data?.message || "Erro desconhecido";
+      alert("O servidor respondeu: " + JSON.stringify(mensagemErro));
     }
   };
 
