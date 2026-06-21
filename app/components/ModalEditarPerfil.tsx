@@ -40,16 +40,17 @@ export default function ModalEditarPerfil({
     if (file) setPreview(URL.createObjectURL(file));
   };
 
- const handleSalvar = async () => {
+const handleSalvar = async () => {
   try {
     setLoading(true);
-    await updateUser(userId, { 
-      fullName: nome,
-      username: username, 
-      email: email 
+    await updateUser(userId, {
+      nome: nome,             
+      username: username,
+      email: email,
+      foto_perfil_url: preview || undefined,  
     });
-    
     toast.success("Perfil atualizado com sucesso!");
+    onSuccess();  // adiciona isso
     onClose();
   } catch {
     toast.error("Erro ao atualizar perfil.");

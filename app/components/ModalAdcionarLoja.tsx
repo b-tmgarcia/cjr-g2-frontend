@@ -75,7 +75,7 @@ export default function ModalAdcionarLoja({ isOpen, onClose }: ModalAdcionarLoja
           const response = await api.post('/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
           });
-          urls[i] = response.data.url;
+          urls[i] = response.data.url_imagem;
         }
       }
 

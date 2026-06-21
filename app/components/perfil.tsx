@@ -1,27 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { AiTwotoneMail } from "react-icons/ai";
+import { BsFillPlusCircleFill } from "react-icons/bs";
 import Navbar from "./navbar";
 import ModalEditarPerfil from "./ModalEditarPerfil";
-import { getUser } from "../services/users"; // Removemos o updateUser daqui
+import ModalAdicionarProduto from "./ModalAdicionarProduto";
+import ModalAdcionarLoja from "./ModalAdcionarLoja";
+import { getUser } from "../services/users";
 
-// Alterado 'name' para 'nome' para bater com o schema.prisma
 interface UsuarioPerfil {
   id: number;
-  nome: string; 
+  nome: string;
   username: string;
   email: string;
-  avatar?: string;
+  foto_perfil_url?: string;
 }
 
 export default function Perfil({ userId }: { userId: number }) {
-  const router = useRouter();
   const [usuario, setUsuario] = useState<UsuarioPerfil | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
+  const [isAddProdutoOpen, setIsAddProdutoOpen] = useState(false);
+  const [isAddLojaOpen, setIsAddLojaOpen] = useState(false);
 
   const carregarUsuario = async () => {
     try {
@@ -38,8 +40,6 @@ export default function Perfil({ userId }: { userId: number }) {
   useEffect(() => {
     carregarUsuario();
   }, [userId]);
-
-  // A FUNÇÃO handleSalvar FOI APAGADA DAQUI! O Modal faz isso agora.
 
   if (loading) {
     return (
@@ -58,64 +58,97 @@ export default function Perfil({ userId }: { userId: number }) {
   }
 
   return (
-    <main style={{ minHeight: "100vh", background: "#F5F0E8" }}>
+    <>
       <Navbar />
+      <main className="relative z-10 bg-amber-50 mt-24">
+        <div className="container mx-auto px-6">
 
-      <div style={{ position: "relative", background: "#000", height: 230 }}>
-        <button
-          onClick={() => router.back()}
-          style={{ position: "absolute", top: 24, left: 32, background: "none", border: "none", cursor: "pointer" }}
-        >
-          <svg width="14" height="22" viewBox="0 0 8 14" fill="none">
-            <polyline points="7 1 1 7 7 13" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+          {/* Cabeçalho do perfil */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col items-start gap-6 flex-1 min-w-0">
+              <img
+                src={usuario.foto_perfil_url || "/images/Ellipse 1.png"}
+                alt="avatar"
+                className="relative z-50 w-40 h-40 rounded-full border-4 border-white shadow-lg object-cover"
+              />
+              <div className="pt-4 text-left min-w-0">
+                <h1 className="text-4xl font-bold text-gray-900">{usuario.nome}</h1>
+                <p className="text-gray-500 mt-1">@ {usuario.username}</p>
+                <p className="text-gray-500 mt-2">
+                  <AiTwotoneMail className="inline mr-2" />
+                  {usuario.email}
+                </p>
+              </div>
+            </div>
 
-        <div style={{
-          position: "absolute", bottom: -55, left: 90,
-          width: 130, height: 130, borderRadius: "50%",
-          overflow: "hidden", border: "4px solid #F5F0E8",
-        }}>
-          <Image
-            src={usuario.avatar || "/images/Ellipse 1.png"}
-            alt={usuario.nome} // Ajustado para nome
-            fill
-            style={{ objectFit: "cover" }}
-            unoptimized
-          />
+            <button
+              type="button"
+              className="mt-4 md:mt-0 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              onClick={() => setModalAberto(true)}
+            >
+              Editar Perfil
+            </button>
+          </div>
+
+          {/* Produtos */}
+          <div className="flex items-center justify-between mt-10">
+            <h2 className="text-2xl font-semibold text-gray-900">Produtos</h2>
+            <button
+              type="button"
+              onClick={() => setIsAddProdutoOpen(true)}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border-4 border-purple-600 bg-purple-600 text-white shadow-lg hover:bg-purple-900 transition-colors"
+            >
+              <BsFillPlusCircleFill size={20} />
+            </button>
+          </div>
+
+          {/* Lojas */}
+          <div className="flex items-center justify-between mt-10">
+            <h2 className="text-2xl font-semibold text-gray-900">Lojas</h2>
+            <button
+              type="button"
+              onClick={() => setIsAddLojaOpen(true)}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border-4 border-purple-600 bg-purple-600 text-white shadow-lg hover:bg-purple-900 transition-colors"
+            >
+              <BsFillPlusCircleFill size={20} />
+            </button>
+          </div>
+
+          {/* Avaliações */}
+          <div className="flex items-center justify-between mt-10 mb-10">
+            <h2 className="text-2xl font-semibold text-gray-900">Avaliações</h2>
+          </div>
+
         </div>
-      </div>
+      </main>
 
-      <div style={{ padding: "70px 90px 40px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: "#111" }}>{usuario.nome}</h1> {/* Ajustado para nome */}
-          <p style={{ margin: "4px 0 2px", fontSize: 14, color: "#4B5563" }}>@ {usuario.username}</p>
-          <p style={{ margin: 0, fontSize: 14, color: "#4B5563" }}>✉ {usuario.email}</p>
-        </div>
-
-        <button
-          onClick={() => setModalAberto(true)}
-          style={{
-            padding: "10px 28px", borderRadius: 30,
-            background: "#6A38F3", color: "#fff", border: "none",
-            cursor: "pointer", fontWeight: 600, fontSize: 15,
-          }}
-        >
-          Editar Perfil
-        </button>
-      </div>
-
-      {/* Trocamos onSave por onSuccess */}
+      {/* Modais */}
       <ModalEditarPerfil
         isOpen={modalAberto}
         onClose={() => setModalAberto(false)}
-        onSuccess={carregarUsuario} 
+        onSuccess={carregarUsuario}
         nomeAtual={usuario.nome}
         usernameAtual={usuario.username}
         emailAtual={usuario.email}
-        fotoAtual={usuario.avatar || ""}
+        fotoAtual={usuario.foto_perfil_url || ""}
         userId={userId}
       />
-    </main>
+
+      {isAddProdutoOpen && (
+        <ModalAdicionarProduto
+          isOpen={isAddProdutoOpen}
+          onClose={() => setIsAddProdutoOpen(false)}
+          lojaId={0}
+          onSuccess={() => setIsAddProdutoOpen(false)}
+        />
+      )}
+
+      {isAddLojaOpen && (
+        <ModalAdcionarLoja
+          isOpen={isAddLojaOpen}
+          onClose={() => setIsAddLojaOpen(false)}
+        />
+      )}
+    </>
   );
 }
