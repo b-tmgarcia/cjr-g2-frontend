@@ -4,32 +4,13 @@ import Image from "next/image";
 import { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import ModalAlterarSenha from "./ModalAlterarSenha";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-async function updateUser(
-  userId: number,
-  data: { name?: string; username?: string; email?: string }
-): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/users/${userId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Falha ao atualizar usuário");
-}
-
-async function deleteUser(userId: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/users/${userId}`, {
-    method: "DELETE",
-  });
-  if (!res.ok) throw new Error("Falha ao deletar usuário");
-}
+import { updateUser, deleteUser } from "../services/users";
 
 interface ModalEditarPerfilProps {
   isOpen: boolean;
   onClose: () => void;
   userId: number;
+  onSuccess: () => void;
   nomeAtual?: string;
   usernameAtual?: string;
   emailAtual?: string;
@@ -40,6 +21,7 @@ export default function ModalEditarPerfil({
   isOpen,
   onClose,
   userId,
+  onSuccess,
   nomeAtual = "",
   usernameAtual = "",
   emailAtual = "",
@@ -58,18 +40,23 @@ export default function ModalEditarPerfil({
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-  const handleSalvar = async () => {
-    try {
-      setLoading(true);
-      await updateUser(userId, { name: nome, username, email });
-      toast.success("Perfil atualizado com sucesso!");
-      onClose();
-    } catch {
-      toast.error("Erro ao atualizar perfil.");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleSalvar = async () => {
+  try {
+    setLoading(true);
+    await updateUser(userId, { 
+      fullName: nome,
+      username: username, 
+      email: email 
+    });
+    
+    toast.success("Perfil atualizado com sucesso!");
+    onClose();
+  } catch {
+    toast.error("Erro ao atualizar perfil.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDeletar = async () => {
     if (!confirm("Tem certeza que deseja deletar sua conta? Essa ação não pode ser desfeita.")) return;
