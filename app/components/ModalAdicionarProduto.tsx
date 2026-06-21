@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import api from "../services/api"; 
 
@@ -23,6 +23,23 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
+  const [categoriasLista, setCategoriasLista] = useState<{id: number, nome: string}[]>([]);
+  const [categoriaId, setCategoriaId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchCategorias() {
+      try {
+        const response = await api.get('/categorias');
+        setCategoriasLista(response.data);
+      } catch (error) {
+        console.error("Erro ao buscar categorias", error);
+      }
+    }
+    if (isOpen) {
+      fetchCategorias();
+    }
+  }, [isOpen]);
+
   const handleFotoChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -41,14 +58,11 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
     try {
       setLoading(true);
 
-      // Mapeamento simples para converter o nome da categoria em ID numérico
-      const categoriaMap: Record<string, number> = {
-        "Eletrônicos": 1,
-        "Roupas": 2,
-        "Alimentos": 3,
-        "Acessórios": 4,
-        "Outros": 5
-      };
+      if (!categoriaId) {
+        toast.error("Por favor, selecione uma categoria.");
+        setLoading(false);
+        return;
+      }
 
       const precoNumerico = parseFloat(preco.replace(",", "."));
 
@@ -59,7 +73,7 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
         preco: precoNumerico,
         estoque,
         loja_id: lojaId, // Ajustado para loja_id (snake_case)
-        categoria_id: categoriaMap[subcategoria] || 1, // Converte a string para ID
+        categoria_id: categoriaId,
       };
 
       // Chamada da API
@@ -168,16 +182,24 @@ export default function ModalAdicionarProduto({ isOpen, onClose, lojaId, onSucce
             <Image src="/images/Vector_148.png" alt="Abrir" width={12} height={12} className={`transition-transform duration-200 ${subcategoriaAberta ? "rotate-180" : ""}`} />
           </button>
           {subcategoriaAberta && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg z-10 overflow-hidden">
-              {["Eletrônicos", "Roupas", "Alimentos", "Acessórios", "Outros"].map((cat) => (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-2xl shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
+              {categoriasLista.length > 0 ? categoriasLista.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => { setSubcategoria(cat); setSubcategoriaAberta(false); }}
+                  key={cat.id}
+                  onClick={() => { 
+                    setSubcategoria(cat.nome); 
+                    setCategoriaId(cat.id);
+                    setSubcategoriaAberta(false); 
+                  }}
                   className="w-full text-left px-5 py-2.5 font-spartan font-light text-[15px] text-gray-700 hover:bg-[#6A38F3]/10 transition"
                 >
-                  {cat}
+                  {cat.nome}
                 </button>
-              ))}
+              )) : (
+                <div className="w-full text-left px-5 py-2.5 font-spartan font-light text-[15px] text-gray-500">
+                  Nenhuma categoria encontrada
+                </div>
+              )}
             </div>
           )}
         </div>
