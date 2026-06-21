@@ -20,6 +20,7 @@ export type Produto = {
 };
 
 export type Loja = {
+  id?: string | number;
   src: string;
   nome: string;
   categoria: string;
@@ -87,9 +88,9 @@ export default function CategoriaEspecificaPage() {
       if (useMocks) {
         setNomeCategoria('O universo da tecnologia (Mock)');
         setPilulasCategorias(['Smartphones', 'Notebooks', 'Fones', 'Periféricos']);
-        setMaisPopulares(mockProdutos.slice(0, 5));
-        setRecemAdicionados(mockProdutos.slice(-5));
-        setLojas(mockLojas);
+        setMaisPopulares(mockProdutos.slice(0, 5).map((p, i) => ({ ...p, id: i + 1 })));
+        setRecemAdicionados(mockProdutos.slice(-5).map((p, i) => ({ ...p, id: i + 6 })));
+        setLojas(mockLojas.map((l, i) => ({ ...l, id: i + 1 })));
         return;
       }
 
@@ -111,6 +112,7 @@ export default function CategoriaEspecificaPage() {
         }
 
         const formatarProduto = (p: any): Produto => ({
+          id: p.id,
           src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
           nome: p.nome || 'Produto Sem Nome',
           preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -118,6 +120,7 @@ export default function CategoriaEspecificaPage() {
         });
 
         const formatarLoja = (l: any): Loja => ({
+          id: l.id,
           src: l.logo_url || '/images/lojas_cjr.png',
           nome: l.nome,
           categoria: l.categoria?.nome || 'Tecnologia'
@@ -145,7 +148,7 @@ export default function CategoriaEspecificaPage() {
     async function carregarProdutosDaPagina() {
       const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
       if (useMocks) {
-        setProdutosExibidos(mockProdutos);
+        setProdutosExibidos(mockProdutos.map((p, i) => ({ ...p, id: i + 1 })));
         return;
       }
 
@@ -154,6 +157,7 @@ export default function CategoriaEspecificaPage() {
         const response = await api.get('/produtos');
         if (response.data) {
           const produtosFormatados = response.data.map((p: any) => ({
+            id: p.id,
             src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
             nome: p.nome || 'Produto Sem Nome',
             preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -421,8 +425,10 @@ export default function CategoriaEspecificaPage() {
           <div style={{ position: 'absolute', top: '50px', left: '114px', width: '1212px', height: '318px' }}>
             <h2 style={{ width: '285px', height: '34px', fontFamily: 'League Spartan, sans-serif', fontWeight: 500, fontSize: '36.25px', lineHeight: '100%', color: '#F6F3E4', margin: '0 0 40px 0' }}>Principais Lojas</h2>
             <div style={{ display: 'flex', gap: '30px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {lojas.map((loja) => (
-                <div key={loja.nome} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', minWidth: '161px' }}>
+              {lojas.map((loja, idx) => (
+                <div key={loja.nome} 
+                  onClick={() => router.push(`/preview/tela-de-loja?id=${loja.id || idx + 1}`)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', minWidth: '161px' }}>
                   <div style={{ width: '130px', height: '130px', borderRadius: '9999px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <Image src={loja.src} alt={loja.nome} width={130} height={130} style={{ objectFit: 'cover' }} />
                   </div>

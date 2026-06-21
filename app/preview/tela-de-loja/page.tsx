@@ -1,8 +1,9 @@
 import Navbar from "../../components/navbar";
 import Loja from "../../components/loja"; // Ajuste o caminho se necessário
 
-export default function LojaPage({ params }: { params: { id?: string } }) {
+export default async function LojaPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   // Define o ID (padrão 1 se não for passado na URL)
+  const params = await searchParams;
   const id = Number(params.id) || 1;
 
   return (

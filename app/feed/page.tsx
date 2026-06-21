@@ -87,11 +87,11 @@ export default function FeedPage() {
     const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
     if (useMocks) {
       setCategorias(mockCategorias);
-      setProdutosMelhoresAvaliados(mockProdutosMelhoresAvaliados);
-      setProdutosMaisBaratos(mockProdutosMaisBaratos);
-      setProdutosModa(mockProdutosModa);
-      setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados);
-      setLojas(mockLojas);
+      setProdutosMelhoresAvaliados(mockProdutosMelhoresAvaliados.map((p, i) => ({ ...p, id: i + 1 })));
+      setProdutosMaisBaratos(mockProdutosMaisBaratos.map((p, i) => ({ ...p, id: i + 6 })));
+      setProdutosModa(mockProdutosModa.map((p, i) => ({ ...p, id: i + 11 })));
+      setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados.map((p, i) => ({ ...p, id: i + 16 })));
+      setLojas(mockLojas.map((l, i) => ({ ...l, id: i + 1 })));
     } else {
       async function fetchDadosReais() {
         try {
@@ -112,6 +112,7 @@ export default function FeedPage() {
 
           if (prodRes.status === 'fulfilled' && prodRes.value.data) {
             const produtosFormatados = prodRes.value.data.map((p: any) => ({
+              id: p.id,
               src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
               nome: p.nome || 'Produto',
               preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -132,6 +133,7 @@ export default function FeedPage() {
 
           if (lojasRes.status === 'fulfilled' && lojasRes.value.data) {
             setLojas(lojasRes.value.data.map((l: any) => ({
+              id: l.id,
               src: l.logo_url || '/images/lojas_cjr.png',
               nome: l.nome,
               categoria: l.categoria?.nome || 'Diversos'
@@ -319,7 +321,9 @@ export default function FeedPage() {
             scrollbarWidth: 'none', boxSizing: 'border-box',
           }}>
             {lojas.map((loja, idx) => (
-              <div key={idx} style={{
+              <div key={idx} 
+                onClick={() => router.push(`/preview/tela-de-loja?id=${loja.id || idx + 1}`)}
+                style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 gap: '0.4rem', cursor: 'pointer',
                 minWidth: '161px', width: '161px', height: '199px', flexShrink: 0,
