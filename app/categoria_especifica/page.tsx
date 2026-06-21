@@ -8,10 +8,12 @@ import { CiSearch } from 'react-icons/ci';
 import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
 import { ProdutoCard } from '@/app/components/ProdutoCard';
+import { SearchBar } from '@/app/components/SearchBar';
 import api from '@/app/services/api';
 
 // Tipos substituindo os imports quebrados
 export type Produto = {
+  id?: number | string;
   src: string;
   nome: string;
   preco: string;
@@ -20,6 +22,7 @@ export type Produto = {
 };
 
 export type Loja = {
+  id?: string | number;
   src: string;
   nome: string;
   categoria: string;
@@ -77,6 +80,7 @@ export default function CategoriaEspecificaPage() {
   const [produtosExibidos, setProdutosExibidos] = useState<Produto[]>([]);
   const [maisPopulares, setMaisPopulares] = useState<Produto[]>([]);
   const [recemAdicionados, setRecemAdicionados] = useState<Produto[]>([]);
+  const [todosProdutos, setTodosProdutos] = useState<Produto[]>([]);
   const [lojas, setLojas] = useState<Loja[]>([]);
 
   // Carrega infos da categoria, destaques e lojas
@@ -87,9 +91,9 @@ export default function CategoriaEspecificaPage() {
       if (useMocks) {
         setNomeCategoria('O universo da tecnologia (Mock)');
         setPilulasCategorias(['Smartphones', 'Notebooks', 'Fones', 'Periféricos']);
-        setMaisPopulares(mockProdutos.slice(0, 5));
-        setRecemAdicionados(mockProdutos.slice(-5));
-        setLojas(mockLojas);
+        setMaisPopulares(mockProdutos.slice(0, 5).map((p, i) => ({ ...p, id: i + 1 })));
+        setRecemAdicionados(mockProdutos.slice(-5).map((p, i) => ({ ...p, id: i + 6 })));
+        setLojas(mockLojas.map((l, i) => ({ ...l, id: i + 1 })));
         return;
       }
 
@@ -111,6 +115,7 @@ export default function CategoriaEspecificaPage() {
         }
 
         const formatarProduto = (p: any): Produto => ({
+          id: p.id,
           src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
           nome: p.nome || 'Produto Sem Nome',
           preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -118,6 +123,7 @@ export default function CategoriaEspecificaPage() {
         });
 
         const formatarLoja = (l: any): Loja => ({
+          id: l.id,
           src: l.logo_url || '/images/lojas_cjr.png',
           nome: l.nome,
           categoria: l.categoria?.nome || 'Tecnologia'
@@ -145,7 +151,9 @@ export default function CategoriaEspecificaPage() {
     async function carregarProdutosDaPagina() {
       const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
       if (useMocks) {
-        setProdutosExibidos(mockProdutos);
+        const mocked = mockProdutos.map((p, i) => ({ ...p, id: i + 1 }));
+        setProdutosExibidos(mocked);
+        setTodosProdutos(mocked);
         return;
       }
 
@@ -154,6 +162,7 @@ export default function CategoriaEspecificaPage() {
         const response = await api.get('/produtos');
         if (response.data) {
           const produtosFormatados = response.data.map((p: any) => ({
+            id: p.id,
             src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
             nome: p.nome || 'Produto Sem Nome',
             preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -164,6 +173,7 @@ export default function CategoriaEspecificaPage() {
           const inicio = (pagina - 1) * itensPorPagina;
           const fim = inicio + itensPorPagina;
           setProdutosExibidos(produtosFormatados.slice(inicio, fim));
+          setTodosProdutos(produtosFormatados);
         }
       } catch (error) {
         console.error(`Erro ao carregar produtos da página ${pagina}:`, error);
@@ -196,7 +206,7 @@ export default function CategoriaEspecificaPage() {
           <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {isLogged ? (
               <>
-                <button aria-label="Perfil" onClick={() => router.push('/preview/perfil')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button aria-label="Perfil" onClick={() => router.push('/preview/profile/1')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <IoPersonSharp style={{ width: '35px', height: '35px' }} />
                 </button>
                 <button aria-label="Sair" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -252,16 +262,7 @@ export default function CategoriaEspecificaPage() {
         {/* Campo de Busca */}
         <section style={{ paddingTop: '20px', paddingLeft: '90px', paddingRight: '65px' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.75rem', marginLeft: '615px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              backgroundColor: 'white', borderRadius: '9999px',
-              padding: '0.65rem 1.25rem', width: '603px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            }}>
-              <input type="text" placeholder="Procurar por..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#6A38F3', fontSize: '1rem' }} />
-              <CiSearch style={{ color: '#6A38F3', marginLeft: '0.5rem', fontSize: '1.2rem' }} />
-            </div>
+            <SearchBar produtos={todosProdutos} />
           </div>
         </section>
 
@@ -421,8 +422,10 @@ export default function CategoriaEspecificaPage() {
           <div style={{ position: 'absolute', top: '50px', left: '114px', width: '1212px', height: '318px' }}>
             <h2 style={{ width: '285px', height: '34px', fontFamily: 'League Spartan, sans-serif', fontWeight: 500, fontSize: '36.25px', lineHeight: '100%', color: '#F6F3E4', margin: '0 0 40px 0' }}>Principais Lojas</h2>
             <div style={{ display: 'flex', gap: '30px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {lojas.map((loja) => (
-                <div key={loja.nome} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', minWidth: '161px' }}>
+              {lojas.map((loja, idx) => (
+                <div key={loja.nome} 
+                  onClick={() => router.push(`/preview/tela-de-loja?id=${loja.id || idx + 1}`)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', minWidth: '161px' }}>
                   <div style={{ width: '130px', height: '130px', borderRadius: '9999px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <Image src={loja.src} alt={loja.nome} width={130} height={130} style={{ objectFit: 'cover' }} />
                   </div>

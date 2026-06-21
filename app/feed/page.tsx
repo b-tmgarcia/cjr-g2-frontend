@@ -12,6 +12,7 @@ import { MdOutlineComputer } from 'react-icons/md';
 import { IoGameControllerOutline } from 'react-icons/io5';
 import { TbHorseToy } from 'react-icons/tb';
 import { SecaoProdutos } from '@/app/components/SecaoProdutos';
+import { SearchBar } from '@/app/components/SearchBar';
 import api from '@/app/services/api';
 
 const mockCategorias: { label: string; icon: React.ReactNode }[] = [
@@ -79,6 +80,7 @@ export default function FeedPage() {
   const [produtosMaisBaratos, setProdutosMaisBaratos] = useState<any[]>([]);
   const [produtosModa, setProdutosModa] = useState<any[]>([]);
   const [produtosRecentementeAdicionados, setProdutosRecentementeAdicionados] = useState<any[]>([]);
+  const [todosProdutos, setTodosProdutos] = useState<any[]>([]);
   const [lojas, setLojas] = useState<any[]>([]);
 
   useEffect(() => {
@@ -87,11 +89,17 @@ export default function FeedPage() {
     const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
     if (useMocks) {
       setCategorias(mockCategorias);
-      setProdutosMelhoresAvaliados(mockProdutosMelhoresAvaliados);
-      setProdutosMaisBaratos(mockProdutosMaisBaratos);
-      setProdutosModa(mockProdutosModa);
-      setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados);
-      setLojas(mockLojas);
+      setProdutosMelhoresAvaliados(mockProdutosMelhoresAvaliados.map((p, i) => ({ ...p, id: i + 1 })));
+      setProdutosMaisBaratos(mockProdutosMaisBaratos.map((p, i) => ({ ...p, id: i + 6 })));
+      setProdutosModa(mockProdutosModa.map((p, i) => ({ ...p, id: i + 11 })));
+      setProdutosRecentementeAdicionados(mockProdutosRecentementeAdicionados.map((p, i) => ({ ...p, id: i + 16 })));
+      setTodosProdutos([
+        ...mockProdutosMelhoresAvaliados.map((p, i) => ({ ...p, id: i + 1 })),
+        ...mockProdutosMaisBaratos.map((p, i) => ({ ...p, id: i + 6 })),
+        ...mockProdutosModa.map((p, i) => ({ ...p, id: i + 11 })),
+        ...mockProdutosRecentementeAdicionados.map((p, i) => ({ ...p, id: i + 16 }))
+      ]);
+      setLojas(mockLojas.map((l, i) => ({ ...l, id: i + 1 })));
     } else {
       async function fetchDadosReais() {
         try {
@@ -112,6 +120,7 @@ export default function FeedPage() {
 
           if (prodRes.status === 'fulfilled' && prodRes.value.data) {
             const produtosFormatados = prodRes.value.data.map((p: any) => ({
+              id: p.id,
               src: p.imagens_produto?.[0]?.url_imagem || '/images/prod_Comp_Lenovo_Repiit.png',
               nome: p.nome || 'Produto',
               preco: `R$ ${p.preco ? Number(p.preco).toFixed(2) : '0.00'}`,
@@ -123,15 +132,18 @@ export default function FeedPage() {
             setProdutosMaisBaratos(produtosFormatados.slice(5, 10));
             setProdutosModa(produtosFormatados.slice(10, 15));
             setProdutosRecentementeAdicionados(produtosFormatados.slice(-5));
+            setTodosProdutos(produtosFormatados);
           } else {
             setProdutosMelhoresAvaliados([]);
             setProdutosMaisBaratos([]);
             setProdutosModa([]);
             setProdutosRecentementeAdicionados([]);
+            setTodosProdutos([]);
           }
 
           if (lojasRes.status === 'fulfilled' && lojasRes.value.data) {
             setLojas(lojasRes.value.data.map((l: any) => ({
+              id: l.id,
               src: l.logo_url || '/images/lojas_cjr.png',
               nome: l.nome,
               categoria: l.categoria?.nome || 'Diversos'
@@ -178,7 +190,7 @@ export default function FeedPage() {
           <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             {isLogged ? (
               <>
-                <button aria-label="Perfil" onClick={() => router.push('/preview/perfil')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button aria-label="Perfil" onClick={() => router.push('/preview/profile/1')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <IoPersonSharp style={{ width: '35px', height: '35px' }} />
                 </button>
                 <button aria-label="Sair" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -240,16 +252,7 @@ export default function FeedPage() {
 
           {/* Busca */}
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.75rem', marginLeft: '615px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              backgroundColor: 'white', borderRadius: '9999px',
-              padding: '0.65rem 1.25rem', width: '603px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-            }}>
-              <input type="text" placeholder="Procurar por..."
-                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#6A38F3', fontSize: '1rem' }} />
-              <CiSearch style={{ color: '#6A38F3', marginLeft: '0.5rem', fontSize: '1.2rem' }} />
-            </div>
+            <SearchBar produtos={todosProdutos} />
           </div>
 
           {/* Categorias */}
@@ -319,7 +322,9 @@ export default function FeedPage() {
             scrollbarWidth: 'none', boxSizing: 'border-box',
           }}>
             {lojas.map((loja, idx) => (
-              <div key={idx} style={{
+              <div key={idx} 
+                onClick={() => router.push(`/preview/tela-de-loja?id=${loja.id || idx + 1}`)}
+                style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 gap: '0.4rem', cursor: 'pointer',
                 minWidth: '161px', width: '161px', height: '199px', flexShrink: 0,
