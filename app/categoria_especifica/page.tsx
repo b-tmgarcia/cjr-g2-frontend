@@ -13,6 +13,7 @@ import api from '@/app/services/api';
 
 // Tipos substituindo os imports quebrados
 export type Produto = {
+  id?: number | string;
   src: string;
   nome: string;
   preco: string;
