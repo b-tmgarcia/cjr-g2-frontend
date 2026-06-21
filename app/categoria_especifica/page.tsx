@@ -49,12 +49,27 @@ const mockLojas = [
   { src: '/images/lojas_abtec.png',        nome: 'abtec',         categoria: 'eletrônicos'  },
 ];
 
+import { useRouter } from 'next/navigation';
+
 export default function CategoriaEspecificaPage() {
+  const router = useRouter();
+  const [isLogged, setIsLogged] = useState(false);
+  
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState('');
   
   // Controle de Paginação Interativa
   const [pagina, setPagina] = useState(1);
+
+  // Verifica login
+  useEffect(() => {
+    setIsLogged(!!localStorage.getItem('token'));
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
 
   // Estados dos dados
   const [nomeCategoria, setNomeCategoria] = useState('O universo da tecnologia');
@@ -179,12 +194,31 @@ export default function CategoriaEspecificaPage() {
               style={{ objectFit: 'contain', objectPosition: 'left' }} priority />
           </div>
           <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            <button aria-label="Perfil" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IoPersonSharp style={{ width: '35px', height: '35px' }} />
-            </button>
-            <button aria-label="Sair" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LuLogOut style={{ width: '28.75px', height: '27.5px' }} />
-            </button>
+            {isLogged ? (
+              <>
+                <button aria-label="Perfil" onClick={() => router.push('/preview/perfil')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IoPersonSharp style={{ width: '35px', height: '35px' }} />
+                </button>
+                <button aria-label="Sair" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <LuLogOut style={{ width: '28.75px', height: '27.5px' }} />
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => router.push('/login')} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', fontFamily: 'League Spartan, sans-serif', fontWeight: 600, fontSize: '17.58px', lineHeight: '100%', textAlign: 'center' }}
+                >
+                  LOGIN
+                </button>
+                <button 
+                  onClick={() => router.push('/cadastro')} 
+                  style={{ background: '#6A38F3', border: 'none', cursor: 'pointer', color: 'white', fontFamily: 'League Spartan, sans-serif', fontWeight: 600, fontSize: '17.58px', lineHeight: '100%', textAlign: 'center', borderRadius: '52.64px', width: '166px', height: '29.09px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  CADASTRE-SE
+                </button>
+              </>
+            )}
           </div>
         </nav>
 
