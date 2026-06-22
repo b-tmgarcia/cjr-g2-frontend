@@ -1,0 +1,322 @@
+'use client';
+
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { LuLogOut } from 'react-icons/lu';
+import { IoPersonSharp } from 'react-icons/io5';
+import { CiSearch } from 'react-icons/ci';
+import { IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { SecaoProdutos } from '@/app/components/SecaoProdutos';
+import { ProdutoCard } from '@/app/components/ProdutoCard';
+import { getProdutosPorPagina, getMaisPopulares, getRecemAdicionados } from '@/services/productService';
+import { getCategoriaInfo } from '@/services/categoryService';
+import { getLojasCategoria } from '@/services/storeService';
+import type { Produto } from '@/mocks/products';
+import type { Loja } from '@/mocks/stores';
+
+export default function CategoriaEspecificaPage() {
+  const [dropdownAberto, setDropdownAberto] = useState(false);
+  const [opcaoSelecionada, setOpcaoSelecionada] = useState('');
+  
+  // Controle de Paginação Interativa
+  const [pagina, setPagina] = useState(1);
+
+  // Estados dos dados
+  const [nomeCategoria, setNomeCategoria] = useState('O universo da tecnologia');
+  const [pilulasCategorias, setPilulasCategorias] = useState<string[]>([]);
+  const [produtosExibidos, setProdutosExibidos] = useState<Produto[]>([]);
+  const [maisPopulares, setMaisPopulares] = useState<Produto[]>([]);
+  const [recemAdicionados, setRecemAdicionados] = useState<Produto[]>([]);
+  const [lojas, setLojas] = useState<Loja[]>([]);
+
+  useEffect(() => {
+    async function carregarDadosIniciais() {
+      try {
+        const [info, populares, recentes, stores] = await Promise.all([
+          getCategoriaInfo('1'),
+          getMaisPopulares(),
+          getRecemAdicionados(),
+          getLojasCategoria()
+        ]);
+
+        if (info) {
+          setNomeCategoria(info.nome);
+          if (info.subcategorias) {
+            setPilulasCategorias(info.subcategorias.map((sub: any) => sub.nome));
+          }
+        }
+        setMaisPopulares(populares);
+        setRecemAdicionados(recentes);
+        setLojas(stores);
+      } catch (error) {
+        console.error("Erro ao carregar dados da categoria:", error);
+      }
+    }
+    carregarDadosIniciais();
+  }, []);
+
+  useEffect(() => {
+    async function carregarProdutosDaPagina() {
+      try {
+        const produtos = await getProdutosPorPagina(pagina);
+        setProdutosExibidos(produtos);
+      } catch (error) {
+        console.error(`Erro ao carregar produtos da página ${pagina}:`, error);
+      }
+    }
+    carregarProdutosDaPagina();
+  }, [pagina]);
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#000', overflowX: 'hidden' }}>
+
+      {/* ══════════════════════════════════════════════════════
+          TOPO DO SITE - ÁREA PRETA — 1440×539px 
+      ══════════════════════════════════════════════════════ */}
+      <section style={{
+        backgroundColor: '#000',
+        width: '1440px', height: '539px',
+        position: 'relative', overflow: 'visible',
+        margin: '0 auto',
+      }}>
+        <nav style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '1440px', height: '92px',
+          boxSizing: 'border-box', position: 'relative',
+        }}>
+          <div style={{ paddingLeft: '80px' }}>
+            <Image src="/images/logo_feed.png" alt="Stock.io" width={240} height={52}
+              style={{ objectFit: 'contain', objectPosition: 'left' }} priority />
+          </div>
+          <div style={{ position: 'absolute', top: '30px', right: '65px', display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <button aria-label="Perfil" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '35px', height: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IoPersonSharp style={{ width: '35px', height: '35px' }} />
+            </button>
+            <button aria-label="Sair" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white', width: '28.75px', height: '27.5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LuLogOut style={{ width: '28.75px', height: '27.5px' }} />
+            </button>
+          </div>
+        </nav>
+
+        <div style={{ position: 'absolute', width: '1440px', height: '864px' }}>
+          <div style={{
+            position: 'absolute', top: '122px', left: '111px',
+            width: '720px', height: '142px', textAlign: 'right',
+          }}>
+            <h1 style={{ color: 'white', fontWeight: 1100, fontSize: '3.35rem', lineHeight: 1.0, margin: 0 }}>
+              <span style={{ display: 'block', whiteSpace: 'nowrap', fontWeight: 700 }}>{nomeCategoria}</span>
+              <span style={{ display: 'block', fontWeight: 600 }}>em um só lugar</span>
+            </h1>
+          </div>
+
+          <div style={{
+            position: 'absolute', top: '0px', left: '757px',
+            width: '572px', height: '780px',
+            zIndex: 0, pointerEvents: 'none',
+          }}>
+            <Image src="/images/mascote_categorias.png" alt="Mascote Stock.io" width={572} height={780}
+              style={{ objectFit: 'contain', objectPosition: 'center', width: '100%', height: '100%' }} priority />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          CORPO BEGE — Figma Absolute Bounds
+      ══════════════════════════════════════════════════════ */}
+      <div style={{ width: '1440px', margin: '0 auto', backgroundColor: '#F6F3E4', position: 'relative', zIndex: 1, minHeight: '1200px' }}>
+
+        {/* Campo de Busca */}
+        <section style={{ paddingTop: '20px', paddingLeft: '90px', paddingRight: '65px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1.75rem', marginLeft: '615px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              backgroundColor: 'white', borderRadius: '9999px',
+              padding: '0.65rem 1.25rem', width: '603px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+            }}>
+              <input type="text" placeholder="Procurar por..."
+                style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#6A38F3', fontSize: '1rem' }} />
+              <CiSearch style={{ color: '#6A38F3', marginLeft: '0.5rem', fontSize: '1.2rem' }} />
+            </div>
+          </div>
+        </section>
+
+        {/* Subcategorias */}
+        <div style={{
+          position: 'absolute', top: '90px', left: '119px', width: '728px', height: '36.81px',
+          display: 'flex', gap: '25.1px',
+        }}>
+          {pilulasCategorias.map((cat, i) => (
+            <div key={i} style={{
+              width: '120.83px', height: '36.81px', borderRadius: '17.67px',
+              backgroundColor: '#FFFFFF', color: '#6A38F3',
+              fontFamily: 'League Spartan, sans-serif', fontWeight: 400, fontSize: '17.67px',
+              lineHeight: '36.81px', textAlign: 'center', cursor: 'pointer',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.05)'
+            }}>
+              {cat}
+            </div>
+          ))}
+        </div>
+
+        {/* Caixa Customizada "Ordenar Por" */}
+        <div style={{
+          position: 'absolute', top: '86px', left: '858px', width: '467.15px',
+          backgroundColor: 'white', borderRadius: dropdownAberto ? '30px' : '9999px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)', zIndex: 50, transition: 'all 0.2s ease-in-out',
+          overflow: 'hidden', height: dropdownAberto ? 'auto' : '43.68px', paddingBottom: dropdownAberto ? '20px' : '0px',
+        }}>
+          <button onClick={() => setDropdownAberto(!dropdownAberto)} style={{ width: '100%', height: '43.68px', background: 'none', border: 'none', textAlign: 'left', padding: '0 29px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <span style={{ fontFamily: 'League Spartan, sans-serif', fontWeight: 300, fontSize: '33.27px', color: '#6A38F3', lineHeight: '100%' }}>ordenar por</span>
+            {dropdownAberto ? <IoIosArrowUp size={24} color="#6A38F3" /> : <IoIosArrowDown size={24} color="#6A38F3" />}
+          </button>
+
+          {dropdownAberto && (
+            <div style={{ padding: '10px 29px 0 29px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {['Padrão', 'Preço', 'Avaliação', 'Mais Recente'].map((opcao) => (
+                <label key={opcao} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontFamily: 'League Spartan, sans-serif', fontSize: '22px', color: '#6A38F3', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={opcaoSelecionada === opcao} onChange={() => setOpcaoSelecionada(opcao)} style={{ width: '20px', height: '20px', accentColor: '#6A38F3', cursor: 'pointer' }} />
+                  {opcao}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Grid de 15 Produtos */}
+        <div style={{ marginLeft: '114px', marginTop: '90px', width: '1211.39px', height: '1035px', position: 'relative' }}>
+          <div style={{
+            width: '1211.39px', height: '964px', display: 'grid',
+            gridTemplateColumns: 'repeat(5, 228.68px)', rowGap: '17px', columnGap: '17px',
+          }}>
+            {produtosExibidos && produtosExibidos.map((prod, index) => (
+              <ProdutoCard key={index} src={prod.src} nome={prod.nome} preco={prod.preco} disponivel={prod.disponivel} />
+            ))}
+          </div>
+
+          {/* ══════════════════════════════════════════════════════
+              CONTROLE DE PAGINAÇÃO — Coordenadas Absolutas do Figma
+          ══════════════════════════════════════════════════════ */}
+          
+          {/* Seta Esquerda (<) */}
+          <div 
+            onClick={() => setPagina(p => Math.max(1, p - 1))} 
+            style={{ 
+              position: 'absolute', top: '1000px', left: '395px',
+              width: '18.23px', height: '24.75px',
+              cursor: 'pointer', opacity: pagina === 1 ? 0.3 : 1, userSelect: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/Vector112.png" alt="Anterior" width={14} height={24} style={{ objectFit: 'contain' }} />
+          </div>
+          
+          {/* Botão Página 1 */}
+          <div
+            onClick={() => setPagina(1)}
+            style={{
+              position: 'absolute', top: '994px', left: '457px', // Calculado baseado na proporção de gap
+              width: '24px', height: '41px',
+              borderBottom: pagina === 1 ? '3px solid #141414' : '3px solid transparent',
+              cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/1.png" alt="Página 1" width={18} height={25} style={{ objectFit: 'contain', opacity: pagina === 1 ? 1 : 0.5 }} />
+          </div>
+
+          {/* Botão Página 2 */}
+          <div
+            onClick={() => setPagina(2)}
+            style={{
+              position: 'absolute', top: '994px', left: '519px',
+              width: '24px', height: '41px',
+              borderBottom: pagina === 2 ? '3px solid #141414' : '3px solid transparent',
+              cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/2.png" alt="Página 2" width={18} height={25} style={{ objectFit: 'contain', opacity: pagina === 2 ? 1 : 0.5 }} />
+          </div>
+
+          {/* Botão Página 3 */}
+          <div
+            onClick={() => setPagina(3)}
+            style={{
+              position: 'absolute', top: '994px', left: '581px',
+              width: '24px', height: '41px',
+              borderBottom: pagina === 3 ? '3px solid #141414' : '3px solid transparent',
+              cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/3.png" alt="Página 3" width={18} height={25} style={{ objectFit: 'contain', opacity: pagina === 3 ? 1 : 0.5 }} />
+          </div>
+
+          {/* Botão Página 4 */}
+          <div
+            onClick={() => setPagina(4)}
+            style={{
+              position: 'absolute', top: '994px', left: '643px',
+              width: '24px', height: '41px',
+              borderBottom: pagina === 4 ? '3px solid #141414' : '3px solid transparent',
+              cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/4.png" alt="Página 4" width={18} height={25} style={{ objectFit: 'contain', opacity: pagina === 4 ? 1 : 0.5 }} />
+          </div>
+
+          {/* Botão Página 5 */}
+          <div
+            onClick={() => setPagina(5)}
+            style={{
+              position: 'absolute', top: '994px', left: '705px',
+              width: '24px', height: '41px',
+              borderBottom: pagina === 5 ? '3px solid #141414' : '3px solid transparent',
+              cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/5.png" alt="Página 5" width={18} height={25} style={{ objectFit: 'contain', opacity: pagina === 5 ? 1 : 0.5 }} />
+          </div>
+
+          {/* Seta Direita (>) */}
+          <div 
+            onClick={() => setPagina(p => Math.min(5, p + 1))} 
+            style={{ 
+              position: 'absolute', top: '1000px', left: '767px',
+              width: '18.23px', height: '24.75px',
+              cursor: 'pointer', opacity: pagina === 5 ? 0.3 : 1, userSelect: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            <Image src="/images/Vector113.png" alt="Próximo" width={14} height={24} style={{ objectFit: 'contain' }} />
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════
+            ÁREA PRETA DAS LOJAS — 1440px x 430px
+        ══════════════════════════════════════════════════════ */}
+        <section style={{ backgroundColor: '#000', width: '1440px', height: '430px', marginTop: '80px', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: '50px', left: '114px', width: '1212px', height: '318px' }}>
+            <h2 style={{ width: '285px', height: '34px', fontFamily: 'League Spartan, sans-serif', fontWeight: 500, fontSize: '36.25px', lineHeight: '100%', color: '#F6F3E4', margin: '0 0 40px 0' }}>Principais Lojas</h2>
+            <div style={{ display: 'flex', gap: '30px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {lojas.map((loja) => (
+                <div key={loja.nome} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', minWidth: '161px' }}>
+                  <div style={{ width: '130px', height: '130px', borderRadius: '9999px', backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    <Image src={loja.src} alt={loja.nome} width={130} height={130} style={{ objectFit: 'cover' }} />
+                  </div>
+                  <span style={{ fontSize: '1rem', fontWeight: 600, color: '#F6F3E4', textAlign: 'center' }}>{loja.nome}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#7c3aed', fontWeight: 500 }}>{loja.categoria}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Barras de Rolagem Horizontais Inferiores */}
+        <div style={{ paddingBottom: '80px', marginTop: '40px' }}>
+          <SecaoProdutos titulo="Mais populares" subtitulo=" " produtos={maisPopulares} />
+          <SecaoProdutos titulo="Recém Adicionados" subtitulo=" " produtos={recemAdicionados} />
+        </div>
+
+      </div>
+    </div>
+  );
+}
